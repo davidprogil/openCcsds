@@ -26,10 +26,11 @@ include ./server/abstraction/abstraction.mk
 # TODO include ./lib/library/library.mk
 # core
 include ./server/core/core.mk
-# missson
+# mission
 # TODO include ./lib/gndPackets/gndPackets.mk
 # TODO include ./lib/fswPackets/fswPackets.mk
 # application
+include ./server/process1/process1.mk
 # TODO include ./lib/serverEssentials/serverEssentials.mk
 # TODO include ./lib/serverCommandsDefinitions/serverCommandsDefinitions.mk
 
@@ -38,7 +39,9 @@ include ./server/core/core.mk
 # compile
 
 SERVER_COMPONENT_OBJ=	$(CORE_COMPONENT_OBJ) \
-						$(ABSTRACTION_COMPONENT_OBJ)
+						$(ABSTRACTION_COMPONENT_OBJ)\
+						$(PROCESS1_COMPONENT_OBJ)
+						
 
 SERVER_COMPONENT_INCLUDES=	$(CORE_COMPONENT_INCLUDES) \
 							$(ABSTRACTION_COMPONENT_INCLUDES)
@@ -92,7 +95,7 @@ run: compile
 
 #export LD_LIBRARY_PATH=/usr/local/lib/dgl; $(SERVER_MAIN_EXE)
 		
-clean: copySurrogates
+clean: 
 	rm -rf $(SERVER_OUTPUT_FOLDER)
 	rm -rf $(SERVER_COMMANDSDEFINITIONS_COMPONENT_OUTPUT_FOLDER)
 	rm -rf $(SERVER_COMPONENT_OBJ)

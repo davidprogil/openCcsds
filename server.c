@@ -20,7 +20,7 @@
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
-/* none */
+#define MAIN_INFINITE_CYCLE_PERIOD_MS (2000)
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -58,10 +58,12 @@ int main(int argc, char *argv[])
 	//abstraction initialization
 	ABST_Init(&osal);
 
-	//Maestro Initialization
+	//Maestro Initialization and wait
 	CMAS_Init(&maestro);
-	//wait
 	ABST_Sleep(100);
+
+	//maestro start
+	CMAS_Start(&maestro);
 
 	//other starts
 	//TODO
@@ -69,8 +71,12 @@ int main(int argc, char *argv[])
 	//Infinite Cycle
 	//unblock maestro
 	//TODO
-	//wait
-	//TODO
+
+	while (maestro.isRunAgain==M_TRUE)
+	{
+		//wait
+		ABST_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
+	}
 
 	printf("END\n");
 	return EXIT_SUCCESS;
