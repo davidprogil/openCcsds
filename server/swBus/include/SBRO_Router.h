@@ -4,8 +4,8 @@
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
 
-#ifndef CMAS_Maestro_H
-#define CMAS_Maestro_H
+#ifndef SBRO_Router_H
+#define SBRO_Router_H
 
 /* system includes-------------------------------------------------------------*/
 /* none */
@@ -13,45 +13,49 @@
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
 #include <ABOS_Osal.h>
-#include <SBRO_Router.h>
-#include <APP1_App1Main.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* macros-----------------------------------------------------------------------*/
-#define CMAS_PROCESSES_NO (2)
-#define CMAS_PROCESSES_SEMAPHORES_NO (2*CMAS_PROCESSES_NO)
+#define SBRO_SUBSCRIBERS_MAX_NO (6)
 
 /* types------------------------------------------------------------------------*/
-typedef struct _CMAS_Maestro_t_
+typedef void(SBRO_DataHandlerFunction_t)(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
+
+typedef struct _SBRO_Subscriber_t_
+{
+	uint32_t apid;
+	void *handlingObject;
+	SBRO_DataHandlerFunction_t *dataHandler;
+
+}SBRO_Subscriber_t;
+
+typedef struct _SBRO_Router_t_
 {
 	//synchronisation
-	ABOS_thread_handle_t threadHandleMaestro;
 	ABOS_thread_handle_t threadHandleExecute;
-	ABOS_sem_handle_t semaphoreMaestro;
-	ABOS_sem_handle_t semaphoreExecute;
-	ABOS_sem_handle_t semaphores[CMAS_PROCESSES_SEMAPHORES_NO];
+	ABOS_sem_handle_t *semaphoreStart;
+	ABOS_sem_handle_t *semaphoreEnd;
 
-	//status
-	bool_t isRunAgain;
-	uint32_t upTime;
-	uint32_t overrunsCounter[CMAS_PROCESSES_SEMAPHORES_NO];
-	uint32_t consecutiveOverrunsCounter[CMAS_PROCESSES_SEMAPHORES_NO];
+	//queue
+	//TODO
 
-	//sub elements
-	SBRO_Router_t swBus;
-	APP1_App1Main_t proc1;
-}CMAS_Maestro_t;
+	//subscribers management
+	SBRO_Subscriber_t subscribers[SBRO_SUBSCRIBERS_MAX_NO];
+	uint32_t subscribersNo;
+
+}SBRO_Router_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void CMAS_Init(CMAS_Maestro_t *this);
-void CMAS_Start(CMAS_Maestro_t *this);
+void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
+void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb);
+void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler);
 
 
 /* end */
-#endif /* CMAS_Maestro_H */
+#endif /* SBRO_Router_H */
 

@@ -9,15 +9,15 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include <APP1_App1Main.h>
+#include <SBRO_Router.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
 //TODO put in configuration?
-#define APP1_THREAD_STACK_SIZE (0)
-#define APP1_THREAD_PRIORITY (0)
+#define SBRO_THREAD_STACK_SIZE (0)
+#define SBRO_THREAD_PRIORITY (0)
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -29,47 +29,65 @@
 /* none */
 
 /* local prototypes -----------------------------------------------------------*/
-void APP1_Execute(APP1_App1Main_t *this);
-ABOS_DEFINE_TASK(APP1_ExecuteThread);
+void SBRO_Execute(SBRO_Router_t *this);
+ABOS_DEFINE_TASK(SBRO_ExecuteThread);
+void SBRO_InitSubscriber(SBRO_Subscriber_t *subscriber);
 
 /* public functions -----------------------------------------------------------*/
-void APP1_Init(APP1_App1Main_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
+void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
 {
-	printf("APP1_Init\n");
+	printf("SBRO_Init\n");
 	this->semaphoreStart=semaphoreStart;
 	this->semaphoreEnd=semaphoreEnd;
 
-	//start task
+	this->subscribersNo=0;
+	for (uint32_t sIx=0;sIx<SBRO_SUBSCRIBERS_MAX_NO;sIx++)
+	{
+		SBRO_InitSubscriber(&this->subscribers[sIx]);
+	}
+
 	ABOS_ThreadCreate(
-			APP1_ExecuteThread, /* function */
-			(int8_t *)"APP1_EXEC", /* name */
-			APP1_THREAD_STACK_SIZE, /* stack depth */
+			SBRO_ExecuteThread, /* function */
+			(int8_t *)"SBRO_EXEC", /* name */
+			SBRO_THREAD_STACK_SIZE, /* stack depth */
 			(void *)this, /* parameters */
-			APP1_THREAD_PRIORITY, /* priority */
+			SBRO_THREAD_PRIORITY, /* priority */
 			&this->threadHandleExecute); /* handler */
 }
 
+void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
+{
+	/* add packet to queue */
+	//TODO
+}
+void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler)
+{
+
+}
 
 
 /* local functions ------------------------------------------------------------*/
-void APP1_Execute(APP1_App1Main_t *this)
+void SBRO_Execute(SBRO_Router_t *this)
 {
-	printf("APP1_Execute\n");
-	//TODO do something
+	printf("SBRO_Execute\n");
 }
 
-ABOS_DEFINE_TASK(APP1_ExecuteThread)
+void SBRO_InitSubscriber(SBRO_Subscriber_t *this)
 {
-	APP1_App1Main_t *this=(APP1_App1Main_t*)param;
+	this->apid=UINT32_MAX;
+	this->dataHandler=NULL;
+	this->handlingObject=NULL;
+}
+
+ABOS_DEFINE_TASK(SBRO_ExecuteThread)
+{
+	SBRO_Router_t *this=(SBRO_Router_t*)param;
 	while(1)//TODO is run again?
 	{
 		ABOS_SemaphoreWait(this->semaphoreStart,ABOS_TASK_MAX_DELAY);
-		APP1_Execute(this);
+		SBRO_Execute(this);
 		ABOS_SemaphorePost(this->semaphoreEnd);
 	}
 	return ABOS_TASK_RETURN;
 }
-
-
-
 /* end */

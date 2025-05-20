@@ -30,6 +30,7 @@ include ./server/core/core.mk
 # TODO include ./lib/gndPackets/gndPackets.mk
 # TODO include ./lib/fswPackets/fswPackets.mk
 # application
+include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
 # TODO include ./lib/serverEssentials/serverEssentials.mk
 # TODO include ./lib/serverCommandsDefinitions/serverCommandsDefinitions.mk
@@ -40,11 +41,12 @@ include ./server/application1/application1.mk
 
 SERVER_COMPONENT_OBJ=	$(CORE_COMPONENT_OBJ) \
 						$(ABSTRACTION_COMPONENT_OBJ)\
-						$(APPLICATION1_COMPONENT_OBJ)
+						$(APPLICATION1_COMPONENT_OBJ) \
+						$(SWBUS_COMPONENT_OBJ) \
 						
 
 SERVER_COMPONENT_INCLUDES=	$(CORE_COMPONENT_INCLUDES) \
-							$(ABSTRACTION_COMPONENT_INCLUDES)
+							$(ABSTRACTION_COMPONENT_INCLUDES) \
 
 
 $(SERVER_OUTPUT_FOLDER):
