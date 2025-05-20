@@ -4,15 +4,15 @@
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
 
-#ifndef PRO1_Proc1Main_H
-#define PRO1_Proc1Main_H
+#ifndef APP1_App1Main_H
+#define APP1_App1Main_H
 
 /* system includes-------------------------------------------------------------*/
 /* none */
 
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
-#include <ABST_Osal.h>
+#include <ABOS_Osal.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -21,20 +21,20 @@
 /* none */
 
 /* types------------------------------------------------------------------------*/
-typedef struct _PRO1_Proc1Main_t_
+typedef struct _APP1_App1Main_t_
 {
 	//synchronisation
-	ABST_thread_handle_t threadHandleExecute;
-	ABST_sem_handle_t *semaphoreStart;
-	ABST_sem_handle_t *semaphoreEnd;
-}PRO1_Proc1Main_t;
+	ABOS_thread_handle_t threadHandleExecute;
+	ABOS_sem_handle_t *semaphoreStart;
+	ABOS_sem_handle_t *semaphoreEnd;
+}APP1_App1Main_t;
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void PRO1_Init(PRO1_Proc1Main_t *this,ABST_sem_handle_t *semaphoreStart,ABST_sem_handle_t *semaphoreEnd);
+void APP1_Init(APP1_App1Main_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
 
 /* end */
-#endif /* PRO1_Proc1Main_H */
+#endif /* APP1_App1Main_H */
 

@@ -15,7 +15,7 @@
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
-#define ABST_MAESTRO_PERIOD_MS (1000)
+#define ABOS_MAESTRO_PERIOD_MS (1000)
 //TODO put in configuration?
 #define MAESTRO_THREAD_STACK_SIZE (0)
 #define MAESTRO_THREAD_PRIORITY (0)
@@ -41,14 +41,14 @@
 
 /* local prototypes -----------------------------------------------------------*/
 void CMAS_Execute(CMAS_Maestro_t *this);
-ABST_DEFINE_TASK(CMAS_MaestroThread);
-ABST_DEFINE_TASK(CMAS_ExecuteThread);
+ABOS_DEFINE_TASK(CMAS_MaestroThread);
+ABOS_DEFINE_TASK(CMAS_ExecuteThread);
 
 /* public functions -----------------------------------------------------------*/
 void CMAS_Init(CMAS_Maestro_t *this)
 {
 	printf("CMAS_Init\n");
-	int8_t semaphoreCreation=ABST_MUTEX_OK;
+	int8_t semaphoreCreation=ABOS_MUTEX_OK;
 
 	//status
 	memset(this,0,sizeof(CMAS_Maestro_t));
@@ -56,36 +56,36 @@ void CMAS_Init(CMAS_Maestro_t *this)
 	this->upTime=0;
 
 	//syncrhonization
-	if (ABST_MUTEX_OK != ABST_BinSemaphoreCreate(&this->semaphoreExecute))
+	if (ABOS_MUTEX_OK != ABOS_BinSemaphoreCreate(&this->semaphoreExecute))
 	{
-		semaphoreCreation|=ABST_SEMAPHORE_ERROR;
+		semaphoreCreation|=ABOS_SEMAPHORE_ERROR;
 		printf("ERROR CMAS_Init  semaphoreExecute semaphore not created.\n");
 	}
 	else
 	{
-		ABST_SemaphoreWait(&this->semaphoreExecute,ABST_TASK_MAX_DELAY);//TODO why two? it seems by default semapthore is green at creation
+		ABOS_SemaphoreWait(&this->semaphoreExecute,ABOS_TASK_MAX_DELAY);//TODO why two? it seems by default semapthore is green at creation
 	}
-	if (ABST_MUTEX_OK != ABST_BinSemaphoreCreate(&this->semaphoreMaestro))
+	if (ABOS_MUTEX_OK != ABOS_BinSemaphoreCreate(&this->semaphoreMaestro))
 	{
-		semaphoreCreation|=ABST_SEMAPHORE_ERROR;
+		semaphoreCreation|=ABOS_SEMAPHORE_ERROR;
 		printf("ERROR CMAS_Init  semaphoreExecute semaphore not created.\n");
 	}
 	else
 	{
-		ABST_SemaphoreWait(&this->semaphoreMaestro,ABST_TASK_MAX_DELAY);//TODO why two? it seems by default semapthore is green at creation
+		ABOS_SemaphoreWait(&this->semaphoreMaestro,ABOS_TASK_MAX_DELAY);//TODO why two? it seems by default semapthore is green at creation
 	}
 	/* semaphores for processes */
 	for (uint32_t semaphoreIx=0;semaphoreIx<CMAS_PROCESSES_SEMAPHORES_NO;semaphoreIx++)
 	{
-		if (ABST_MUTEX_OK != ABST_BinSemaphoreCreate(&this->semaphores[semaphoreIx]))
+		if (ABOS_MUTEX_OK != ABOS_BinSemaphoreCreate(&this->semaphores[semaphoreIx]))
 		{
-			semaphoreCreation|=ABST_SEMAPHORE_ERROR;
+			semaphoreCreation|=ABOS_SEMAPHORE_ERROR;
 			printf("ERROR semaphore not created.\n");
 		}
 		else
 		{
 			//printf("created semaphore %d %p\n",semaphoreIx,&this->semaphores[semaphoreIx]);
-			ABST_SemaphoreWait(&this->semaphores[semaphoreIx],100);//TODO why two? it seems by default semapthore is green at creation
+			ABOS_SemaphoreWait(&this->semaphores[semaphoreIx],100);//TODO why two? it seems by default semapthore is green at creation
 		}
 
 		this->overrunsCounter[semaphoreIx]=0;
@@ -93,7 +93,7 @@ void CMAS_Init(CMAS_Maestro_t *this)
 	}
 
 	/* create mutex for syncFileManagerIO */
-	if (ABST_MUTEX_OK != semaphoreCreation)
+	if (ABOS_MUTEX_OK != semaphoreCreation)
 	{
 		/* TODO: log this information
 		 * TODO: raise an alarm
@@ -106,11 +106,11 @@ void CMAS_Init(CMAS_Maestro_t *this)
 	{
 
 		//Initialise sub elements
-		PRO1_Init(&this->proc1,&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);
+		APP1_Init(&this->proc1,&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);
 
 		this->isRunAgain=M_TRUE;
 		/* create threads */
-		ABST_ThreadCreate(
+		ABOS_ThreadCreate(
 				CMAS_MaestroThread, /* function */
 				(int8_t *)"MAESTRO", /* name */
 				MAESTRO_THREAD_STACK_SIZE, /* stack depth */
@@ -118,7 +118,7 @@ void CMAS_Init(CMAS_Maestro_t *this)
 				MAESTRO_THREAD_PRIORITY, /* priority */
 				&this->threadHandleMaestro); /* handler */
 
-		ABST_ThreadCreate(
+		ABOS_ThreadCreate(
 				CMAS_ExecuteThread, /* function */
 				(int8_t *)"MAESTRO_EXEC", /* name */
 				EXECUTE_THREAD_STACK_SIZE, /* stack depth */
@@ -131,7 +131,7 @@ void CMAS_Init(CMAS_Maestro_t *this)
 
 void CMAS_Start(CMAS_Maestro_t *this)
 {
-	ABST_SemaphorePost(&this->semaphoreMaestro);
+	ABOS_SemaphorePost(&this->semaphoreMaestro);
 }
 
 /* local functions ------------------------------------------------------------*/
@@ -144,19 +144,19 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 	//run the processes in their slot
 	//process1
 	/* wait for start of task */
-	ABST_Sleep(PROCESS1_WAIT_BEFORE_MS-timeWaited);
+	ABOS_Sleep(PROCESS1_WAIT_BEFORE_MS-timeWaited);
 	timeWaited+=PROCESS1_WAIT_BEFORE_MS;
 	/* unfreeze it */
-	ABST_SemaphoreWait(&this->semaphores[PROCESS1_SEM_END_INDEX],0);//get last one if any
-	ABST_SemaphorePost(&this->semaphores[PROCESS1_SEM_START_INDEX]);
+	ABOS_SemaphoreWait(&this->semaphores[PROCESS1_SEM_END_INDEX],0);//get last one if any
+	ABOS_SemaphorePost(&this->semaphores[PROCESS1_SEM_START_INDEX]);
 	/* wait for end of task*/
 	//printf("FHW_Task 3\n");//TODO remove
-	ABST_Sleep(PROCESS1_TIME_LENGTH_MS);
+	ABOS_Sleep(PROCESS1_TIME_LENGTH_MS);
 	timeWaited+=PROCESS1_TIME_LENGTH_MS;
-	waitResult=ABST_SemaphoreWait(&this->semaphores[PROCESS1_SEM_END_INDEX],0);
+	waitResult=ABOS_SemaphoreWait(&this->semaphores[PROCESS1_SEM_END_INDEX],0);
 	//printf("FHW_Task 4\n");//TODO remove
 	/* check if it met result */
-	if (ABST_SEMAPHORE_OK!=waitResult)
+	if (ABOS_SEMAPHORE_OK!=waitResult)
 	{
 		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);//TODO remove
 		/*monitored*/
@@ -182,35 +182,35 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 
 }
 
-ABST_DEFINE_TASK(CMAS_MaestroThread)
+ABOS_DEFINE_TASK(CMAS_MaestroThread)
 {
 	CMAS_Maestro_t *this=(CMAS_Maestro_t*)param;
-	ABST_SemaphoreWait(&this->semaphoreMaestro,ABST_TASK_MAX_DELAY);
+	ABOS_SemaphoreWait(&this->semaphoreMaestro,ABOS_TASK_MAX_DELAY);
 	while (this->isRunAgain==M_TRUE)
 	{
 		printf("debug: CMAS_MaestroThread %d\n",this->upTime);
 
 		//unlblock CMAS_ExecuteThread
-		ABST_SemaphorePost(&this->semaphoreExecute);
+		ABOS_SemaphorePost(&this->semaphoreExecute);
 
-		ABST_Sleep(ABST_MAESTRO_PERIOD_MS);
+		ABOS_Sleep(ABOS_MAESTRO_PERIOD_MS);
 		this->upTime++;
 	}
-	return ABST_TASK_RETURN;
+	return ABOS_TASK_RETURN;
 }
 
-ABST_DEFINE_TASK(CMAS_ExecuteThread)
+ABOS_DEFINE_TASK(CMAS_ExecuteThread)
 {
 	CMAS_Maestro_t *this=(CMAS_Maestro_t*)param;
 
 	while (this->isRunAgain==M_TRUE)
 	{
 		//wait for unblock
-		ABST_SemaphoreWait(&this->semaphoreExecute,ABST_TASK_MAX_DELAY);
+		ABOS_SemaphoreWait(&this->semaphoreExecute,ABOS_TASK_MAX_DELAY);
 
 		CMAS_Execute(this);
 	}
-	return ABST_TASK_RETURN;
+	return ABOS_TASK_RETURN;
 }
 
 /* end */

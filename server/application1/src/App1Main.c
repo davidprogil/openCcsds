@@ -9,15 +9,15 @@
 #include <stdio.h>
 
 /* application includes--------------------------------------------------------*/
-#include <PRO1_Proc1Main.h>
+#include <APP1_App1Main.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
 //TODO put in configuration?
-#define PRO1_THREAD_STACK_SIZE (0)
-#define PRO1_THREAD_PRIORITY (0)
+#define APP1_THREAD_STACK_SIZE (0)
+#define APP1_THREAD_PRIORITY (0)
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -29,43 +29,43 @@
 /* none */
 
 /* local prototypes -----------------------------------------------------------*/
-void PRO1_Execute(PRO1_Proc1Main_t *this);
-ABST_DEFINE_TASK(PRO1_ExecuteThread);
+void APP1_Execute(APP1_App1Main_t *this);
+ABOS_DEFINE_TASK(APP1_ExecuteThread);
 
 /* public functions -----------------------------------------------------------*/
-void PRO1_Init(PRO1_Proc1Main_t *this,ABST_sem_handle_t *semaphoreStart,ABST_sem_handle_t *semaphoreEnd)
+void APP1_Init(APP1_App1Main_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
 {
-	printf("PRO1_Init\n");
+	printf("APP1_Init\n");
 	this->semaphoreStart=semaphoreStart;
 	this->semaphoreEnd=semaphoreEnd;
 
 	//start task
-	ABST_ThreadCreate(
-			PRO1_ExecuteThread, /* function */
+	ABOS_ThreadCreate(
+			APP1_ExecuteThread, /* function */
 			(int8_t *)"MAESTRO_EXEC", /* name */
-			PRO1_THREAD_STACK_SIZE, /* stack depth */
+			APP1_THREAD_STACK_SIZE, /* stack depth */
 			(void *)this, /* parameters */
-			PRO1_THREAD_PRIORITY, /* priority */
+			APP1_THREAD_PRIORITY, /* priority */
 			&this->threadHandleExecute); /* handler */
 }
 
 
 
 /* local functions ------------------------------------------------------------*/
-void PRO1_Execute(PRO1_Proc1Main_t *this)
+void APP1_Execute(APP1_App1Main_t *this)
 {
-	printf("PRO1_Execute\n");
+	printf("APP1_Execute\n");
 	//TODO do something
 }
 
-ABST_DEFINE_TASK(PRO1_ExecuteThread)
+ABOS_DEFINE_TASK(APP1_ExecuteThread)
 {
-	PRO1_Proc1Main_t *this=(PRO1_Proc1Main_t*)param;
+	APP1_App1Main_t *this=(APP1_App1Main_t*)param;
 	while(1)//TODO is run again?
 	{
-		ABST_SemaphoreWait(this->semaphoreStart,ABST_TASK_MAX_DELAY);
-		PRO1_Execute(this);
-		ABST_SemaphorePost(this->semaphoreEnd);
+		ABOS_SemaphoreWait(this->semaphoreStart,ABOS_TASK_MAX_DELAY);
+		APP1_Execute(this);
+		ABOS_SemaphorePost(this->semaphoreEnd);
 	}
 }
 

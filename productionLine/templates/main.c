@@ -6,7 +6,6 @@
 /*******************************************************************************/
 
 /* system includes-------------------------------------------------------------*/
-#include <ABOS_Osal.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -14,13 +13,13 @@
 #include<pthread.h>
 
 /* application includes--------------------------------------------------------*/
-#include <CORE_Maestro.h>
+/* none */
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
-#define MAIN_INFINITE_CYCLE_PERIOD_MS (2000)
+/* none */
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -29,8 +28,7 @@
 /* none */
 
 /* local variables ------------------------------------------------------------*/
-CMAS_Maestro_t maestro;
-ABOS_Osal_t osal;
+/* none */
 
 /* local prototypes -----------------------------------------------------------*/
 /* none */
@@ -39,49 +37,9 @@ ABOS_Osal_t osal;
 /* public functions -----------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
-	printf("SERVER\n");
+	printf("My Main\n");
 
-	//road map:
-	// x server folder
-	// x maestro template and init integrated
-	// x OSAL integrated
-	// x maestro running each 1 sec
-	// x application1 template and init integrated
-	// x maestro scheduling application1
-	// - SW bus with internal issuing of commands
-	// - SW bus with external issuing of command
-	// - more complicated process
 
-	//hardware initialization
-	//not applicable in standard linux pc
-
-	//library initalizations
-	//TODO
-
-	//abstraction initialization
-	ABOS_Init(&osal);
-
-	//Maestro Initialization and wait
-	CMAS_Init(&maestro);
-	ABOS_Sleep(100);
-
-	//maestro start
-	CMAS_Start(&maestro);
-
-	//other starts
-	//TODO
-
-	//Infinite Cycle
-	//unblock maestro
-	//TODO
-
-	while (maestro.isRunAgain==M_TRUE)
-	{
-		//wait
-		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
-	}
-
-	printf("END\n");
 	return EXIT_SUCCESS;
 }
 /* local functions ------------------------------------------------------------*/

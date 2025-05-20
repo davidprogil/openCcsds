@@ -12,8 +12,8 @@
 
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
-#include <ABST_Osal.h>
-#include <PRO1_Proc1Main.h>
+#include <ABOS_Osal.h>
+#include <APP1_App1Main.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -26,11 +26,11 @@
 typedef struct _CMAS_Maestro_t_
 {
 	//synchronisation
-	ABST_thread_handle_t threadHandleMaestro;
-	ABST_thread_handle_t threadHandleExecute;
-	ABST_sem_handle_t semaphoreMaestro;
-	ABST_sem_handle_t semaphoreExecute;
-	ABST_sem_handle_t semaphores[CMAS_PROCESSES_SEMAPHORES_NO];
+	ABOS_thread_handle_t threadHandleMaestro;
+	ABOS_thread_handle_t threadHandleExecute;
+	ABOS_sem_handle_t semaphoreMaestro;
+	ABOS_sem_handle_t semaphoreExecute;
+	ABOS_sem_handle_t semaphores[CMAS_PROCESSES_SEMAPHORES_NO];
 
 	//status
 	bool_t isRunAgain;
@@ -39,7 +39,7 @@ typedef struct _CMAS_Maestro_t_
 	uint32_t consecutiveOverrunsCounter[CMAS_PROCESSES_SEMAPHORES_NO];
 
 	//sub elements
-	PRO1_Proc1Main_t proc1;
+	APP1_App1Main_t proc1;
 }CMAS_Maestro_t;
 
 /* public variables-------------------------------------------------------------*/
