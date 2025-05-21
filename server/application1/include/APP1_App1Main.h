@@ -13,6 +13,7 @@
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
 #include <ABOS_Osal.h>
+#include <SBRO_Router.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -33,7 +34,7 @@ typedef struct _APP1_App1Main_t_
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void APP1_Init(APP1_App1Main_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
+void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
 
 /* end */
 #endif /* APP1_App1Main_H */

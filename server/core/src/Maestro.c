@@ -114,7 +114,7 @@ void CMAS_Init(CMAS_Maestro_t *this)
 
 		//Initialise sub elements
 		SBRO_Init(&this->swBus,&this->semaphores[SWBUS_SEM_START_INDEX],&this->semaphores[SWBUS_SEM_END_INDEX]);
-		APP1_Init(&this->proc1,&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);
+		APP1_Init(&this->proc1,&this->swBus,&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);
 
 		this->isRunAgain=M_TRUE;
 		/* create threads */

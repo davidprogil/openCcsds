@@ -18,6 +18,7 @@
 //TODO put in configuration?
 #define APP1_THREAD_STACK_SIZE (0)
 #define APP1_THREAD_PRIORITY (0)
+#define APP1_APID (1)
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -31,13 +32,16 @@
 /* local prototypes -----------------------------------------------------------*/
 void APP1_Execute(APP1_App1Main_t *this);
 ABOS_DEFINE_TASK(APP1_ExecuteThread);
+void APP1_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
 
 /* public functions -----------------------------------------------------------*/
-void APP1_Init(APP1_App1Main_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
+void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
 {
 	printf("APP1_Init\n");
 	this->semaphoreStart=semaphoreStart;
 	this->semaphoreEnd=semaphoreEnd;
+
+	SBRO_Subscribe(router,APP1_APID,this,*APP1_DataHandler);
 
 	//start task
 	ABOS_ThreadCreate(
@@ -56,6 +60,11 @@ void APP1_Execute(APP1_App1Main_t *this)
 {
 	printf("APP1_Execute\n");
 	//TODO do something
+}
+
+void APP1_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb)
+{
+
 }
 
 ABOS_DEFINE_TASK(APP1_ExecuteThread)
