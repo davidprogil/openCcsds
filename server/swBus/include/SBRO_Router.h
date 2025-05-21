@@ -13,12 +13,14 @@
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
 #include <ABOS_Osal.h>
+#include <LIB_Queue.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* macros-----------------------------------------------------------------------*/
 #define SBRO_SUBSCRIBERS_MAX_NO (6)
+#define SBRO_QUEUE_NB (2000)
 
 /* types------------------------------------------------------------------------*/
 typedef void(SBRO_DataHandlerFunction_t)(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
@@ -38,8 +40,12 @@ typedef struct _SBRO_Router_t_
 	ABOS_sem_handle_t *semaphoreStart;
 	ABOS_sem_handle_t *semaphoreEnd;
 
+	//counters
+	uint32_t rejectedPacketsNo;
+
 	//queue
-	//TODO
+	LFQ_Queue_t packetQueue;
+	uint8_t packetQueueBuffer[SBRO_QUEUE_NB];
 
 	//subscribers management
 	SBRO_Subscriber_t subscribers[SBRO_SUBSCRIBERS_MAX_NO];

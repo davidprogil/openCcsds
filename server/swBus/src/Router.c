@@ -37,9 +37,17 @@ void SBRO_InitSubscriber(SBRO_Subscriber_t *subscriber);
 void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
 {
 	printf("SBRO_Init\n");
+	//synchronisation
 	this->semaphoreStart=semaphoreStart;
 	this->semaphoreEnd=semaphoreEnd;
 
+	//status
+	this->rejectedPacketsNo=0;
+
+	//packet queue
+	LFQ_Init(&this->packetQueue,this->packetQueueBuffer,SBRO_QUEUE_NB);
+
+	//subscriber list
 	this->subscribersNo=0;
 	for (uint32_t sIx=0;sIx<SBRO_SUBSCRIBERS_MAX_NO;sIx++)
 	{
@@ -58,11 +66,17 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
 {
 	/* add packet to queue */
-	//TODO
+	if (LFQ_QueueAdd(&this->packetQueue,inData,inDataNb)==M_TRUE)
+	{
+		this->rejectedPacketsNo++;
+	}
 }
 void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler)
 {
-
+	this->subscribers[this->subscribersNo].apid=apid;
+	this->subscribers[this->subscribersNo].handlingObject=handlingObject;
+	this->subscribers[this->subscribersNo].dataHandler=dataHandler;
+	this->subscribersNo++;
 }
 
 

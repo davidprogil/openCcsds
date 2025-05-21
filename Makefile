@@ -23,7 +23,7 @@ TARGET=$(shell uname -m)
 # TODO include ./lib/nullRadio/nullRadio.mk
 include ./server/abstraction/abstraction.mk
 # library
-# TODO include ./lib/library/library.mk
+include ./server/library/library.mk
 # core
 include ./server/core/core.mk
 # mission
@@ -43,6 +43,7 @@ SERVER_COMPONENT_OBJ=	$(CORE_COMPONENT_OBJ) \
 						$(ABSTRACTION_COMPONENT_OBJ)\
 						$(APPLICATION1_COMPONENT_OBJ) \
 						$(SWBUS_COMPONENT_OBJ) \
+						$(LIBRARY_COMPONENT_OBJ)
 						
 
 SERVER_COMPONENT_INCLUDES=	$(CORE_COMPONENT_INCLUDES) \
