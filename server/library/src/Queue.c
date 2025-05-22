@@ -86,7 +86,7 @@ bool_t LFQ_QueueAdd(LFQ_Queue_t *this,void *element,uint32_t elementSize)
 
 bool_t  LFQ_QueueGet(LFQ_Queue_t *this,void *target,uint16_t *dataSize)
 {
-	bool_t returnValue=M_FALSE;
+	bool_t isPacket=M_FALSE;
 	uint32_t elementSize=0;
 	if (this->noElements>0)
 	{
@@ -100,9 +100,9 @@ bool_t  LFQ_QueueGet(LFQ_Queue_t *this,void *target,uint16_t *dataSize)
 		this->noElements--;
 		this->readIx++;
 		this->currentDataSize-=elementSize;
-		returnValue=M_TRUE;
+		isPacket=M_TRUE;
 	}
-	return returnValue;
+	return isPacket;
 }
 
 /* local functions ------------------------------------------------------------*/

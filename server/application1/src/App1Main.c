@@ -41,6 +41,16 @@ void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *se
 	this->semaphoreStart=semaphoreStart;
 	this->semaphoreEnd=semaphoreEnd;
 
+	//status
+	this->sentPacketsNo=0;
+	this->receivedPacketsNo=0;
+	this->rejectedPacketsNo=0;
+
+	//packet queue
+	LFQ_Init(&this->packetQueue,this->packetQueueBuffer,APP1_QUEUE_NB);
+	ABOS_MutexCreate(&this->packetQueueMutex);
+
+	//subscribe
 	SBRO_Subscribe(router,APP1_APID,this,*APP1_DataHandler);
 
 	//start task
@@ -58,13 +68,31 @@ void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *se
 /* local functions ------------------------------------------------------------*/
 void APP1_Execute(APP1_App1Main_t *this)
 {
-	printf("APP1_Execute\n");
-	//TODO do something
+	//printf("APP1_Execute\n");
+	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
+	uint16_t packetSize;
+	CCSDS_Packet_t *packet;
+	//get packets from the queue
+	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
+	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))
+	{
+		printf("APP1_DataHandler received packet:\n");
+		packet=(CCSDS_Packet_t*)packetBuffer;
+		CCSDS_PrintPacket(packet);
+	}
+	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 
 void APP1_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb)
 {
-
+	APP1_App1Main_t *this=(APP1_App1Main_t*)handlingObject;
+	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
+	if (LFQ_QueueAdd(&this->packetQueue,inData,inDataNb)==M_TRUE)
+	{
+		printf("warning: SBRO_Publish packet rejected\n");
+		this->rejectedPacketsNo++;
+	}
+	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 
 ABOS_DEFINE_TASK(APP1_ExecuteThread)

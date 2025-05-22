@@ -32,6 +32,7 @@
 void SBRO_Execute(SBRO_Router_t *this);
 ABOS_DEFINE_TASK(SBRO_ExecuteThread);
 void SBRO_InitSubscriber(SBRO_Subscriber_t *subscriber);
+uint32_t GetSubscriberForPid(SBRO_Router_t *this,uint16_t apid);
 
 /* public functions -----------------------------------------------------------*/
 void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd)
@@ -43,9 +44,11 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 
 	//status
 	this->rejectedPacketsNo=0;
+	this->subscriberNotFoundNo=0;
 
 	//packet queue
 	LFQ_Init(&this->packetQueue,this->packetQueueBuffer,SBRO_QUEUE_NB);
+	ABOS_MutexCreate(&this->packetQueueMutex);
 
 	//subscriber list
 	this->subscribersNo=0;
@@ -66,10 +69,13 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
 {
 	/* add packet to queue */
+	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
 	if (LFQ_QueueAdd(&this->packetQueue,inData,inDataNb)==M_TRUE)
 	{
+		printf("warning: SBRO_Publish packet rejected\n");
 		this->rejectedPacketsNo++;
 	}
+	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler)
 {
@@ -83,7 +89,33 @@ void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_
 /* local functions ------------------------------------------------------------*/
 void SBRO_Execute(SBRO_Router_t *this)
 {
-	printf("SBRO_Execute\n");
+	//printf("SBRO_Execute\n");
+	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
+	uint16_t packetSize;
+	CCSDS_Packet_t *packet;
+	uint16_t subscriberIx;
+	//get packets from the queue and call adequate subscriber
+	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
+	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))
+	{
+		packet=(CCSDS_Packet_t*)packetBuffer;
+		printf("received packet for apid: %d\n",packet->primaryHeader.apid);
+		subscriberIx=GetSubscriberForPid(this,packet->primaryHeader.apid);
+		if (subscriberIx!=UINT32_MAX)
+		{
+			//call subscriber
+			this->subscribers[subscriberIx].dataHandler(
+					this->subscribers[subscriberIx].handlingObject,
+					packetBuffer,
+					packetSize);
+		}
+		else
+		{
+			printf("warning: SBRO_Execute subscriber not found for apid %d\n",packet->primaryHeader.apid);
+			this->subscriberNotFoundNo++;
+		}
+	}
+	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 
 void SBRO_InitSubscriber(SBRO_Subscriber_t *this)
@@ -91,6 +123,23 @@ void SBRO_InitSubscriber(SBRO_Subscriber_t *this)
 	this->apid=UINT32_MAX;
 	this->dataHandler=NULL;
 	this->handlingObject=NULL;
+}
+
+uint32_t GetSubscriberForPid(SBRO_Router_t *this,uint16_t apid)
+{
+	uint32_t subscriberIx=UINT32_MAX;
+
+	for (uint32_t sIx=0;sIx<SBRO_SUBSCRIBERS_MAX_NO;sIx++)
+	{
+		if (this->subscribers[sIx].apid==apid)
+		{
+			subscriberIx=sIx;
+			break;
+		}
+	}
+
+
+	return subscriberIx;
 }
 
 ABOS_DEFINE_TASK(SBRO_ExecuteThread)

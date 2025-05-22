@@ -19,8 +19,9 @@
 /* none */
 
 /* macros-----------------------------------------------------------------------*/
-/* none */
-
+//TODO move to configuration
+#define APP1_APID (1)
+#define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
 /* types------------------------------------------------------------------------*/
 typedef struct _APP1_App1Main_t_
 {
@@ -28,6 +29,17 @@ typedef struct _APP1_App1Main_t_
 	ABOS_thread_handle_t threadHandleExecute;
 	ABOS_sem_handle_t *semaphoreStart;
 	ABOS_sem_handle_t *semaphoreEnd;
+
+	//status
+	uint16_t sentPacketsNo;
+	uint16_t receivedPacketsNo;
+	uint16_t rejectedPacketsNo;
+
+	//queue
+	LFQ_Queue_t packetQueue;
+	uint8_t packetQueueBuffer[APP1_QUEUE_NB];
+	ABOS_mutex_t packetQueueMutex;
+
 }APP1_App1Main_t;
 
 /* public variables-------------------------------------------------------------*/

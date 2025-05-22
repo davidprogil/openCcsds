@@ -16,11 +16,12 @@
 #include <LIB_Queue.h>
 
 /* component includes----------------------------------------------------------*/
-/* none */
+#include <SBCC_CcsdsUtils.h>
 
 /* macros-----------------------------------------------------------------------*/
-#define SBRO_SUBSCRIBERS_MAX_NO (6)
-#define SBRO_QUEUE_NB (2000)
+#define SBRO_SUBSCRIBERS_MAX_NO (6) //TODO move to configuration
+#define SBRO_QUEUE_NB (2000) //TODO move to configuration
+#define SBRO_PACKET_MAX_NB (256) //TODO move to configuration
 
 /* types------------------------------------------------------------------------*/
 typedef void(SBRO_DataHandlerFunction_t)(void *handlingObject, uint8_t *inData,uint32_t inDataNb);
@@ -42,10 +43,12 @@ typedef struct _SBRO_Router_t_
 
 	//counters
 	uint32_t rejectedPacketsNo;
+	uint32_t subscriberNotFoundNo;
 
 	//queue
 	LFQ_Queue_t packetQueue;
 	uint8_t packetQueueBuffer[SBRO_QUEUE_NB];
+	ABOS_mutex_t packetQueueMutex;
 
 	//subscribers management
 	SBRO_Subscriber_t subscribers[SBRO_SUBSCRIBERS_MAX_NO];

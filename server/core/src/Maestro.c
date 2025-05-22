@@ -145,7 +145,7 @@ void CMAS_Start(CMAS_Maestro_t *this)
 /* local functions ------------------------------------------------------------*/
 void CMAS_Execute(CMAS_Maestro_t *this)
 {
-	printf("CMAS_Execute\n");
+	//printf("CMAS_Execute\n");
 	uint16_t timeWaited=0;
 	int8_t waitResult;
 
