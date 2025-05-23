@@ -12,6 +12,7 @@
 
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
+#include <configuration.h>
 #include <ABOS_Osal.h>
 #include <LIB_Queue.h>
 
@@ -19,9 +20,7 @@
 #include <SBCC_CcsdsUtils.h>
 
 /* macros-----------------------------------------------------------------------*/
-#define SBRO_SUBSCRIBERS_MAX_NO (6) //TODO move to configuration
-#define SBRO_QUEUE_NB (2000) //TODO move to configuration
-#define SBRO_PACKET_MAX_NB (256) //TODO move to configuration
+/* none */
 
 /* types------------------------------------------------------------------------*/
 typedef void(SBRO_DataHandlerFunction_t)(void *handlingObject, uint8_t *inData,uint32_t inDataNb);

@@ -3,51 +3,59 @@
 /* 								                                               */
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
-
-#ifndef APP1_App1Main_H
-#define APP1_App1Main_H
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
 
 /* system includes-------------------------------------------------------------*/
-/* none */
+#include<stdlib.h>
 
 /* application includes--------------------------------------------------------*/
-#include <myTypes.h>
-#include <configuration.h>
-#include <ABOS_Osal.h>
-#include <SBRO_Router.h>
+/* none */
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* macros-----------------------------------------------------------------------*/
-/* none */
+//APID
+#define GROUND_APID (0)
+#define APP1_APID (1)
+
+#define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
+
+//thread configuration
+#define MAESTRO_THREAD_STACK_SIZE (0)
+#define MAESTRO_THREAD_PRIORITY (0)
+#define EXECUTE_THREAD_STACK_SIZE (0)
+#define EXECUTE_THREAD_PRIORITY (0)
+
+#define APP1_THREAD_STACK_SIZE (0)
+#define APP1_THREAD_PRIORITY (0)
+
+#define SBRO_THREAD_STACK_SIZE (0)
+#define SBRO_THREAD_PRIORITY (0)
+
+//scheduling of apps
+#define ABOS_MAESTRO_PERIOD_MS (1000)
+#define SWBUS_WAIT_BEFORE_MS (10)
+#define SWBUS_TIME_LENGTH_MS (90)
+#define PROCESS1_WAIT_BEFORE_MS (110)
+#define PROCESS1_TIME_LENGTH_MS (100)
+
+//SW BUS Configuration
+#define SBRO_SUBSCRIBERS_MAX_NO (6) //TODO move to configuration
+#define SBRO_QUEUE_NB (2000) //TODO move to configuration
+#define SBRO_PACKET_MAX_NB (256) //TODO move to configuration
+
 
 /* types------------------------------------------------------------------------*/
-typedef struct _APP1_App1Main_t_
-{
-	//synchronisation
-	ABOS_thread_handle_t threadHandleExecute;
-	ABOS_sem_handle_t *semaphoreStart;
-	ABOS_sem_handle_t *semaphoreEnd;
-
-	//status
-	uint16_t sentPacketsNo;
-	uint16_t receivedPacketsNo;
-	uint16_t rejectedPacketsNo;
-	bool_t isRunAgain;
-	//queue
-	LFQ_Queue_t packetQueue;
-	uint8_t packetQueueBuffer[APP1_QUEUE_NB];
-	ABOS_mutex_t packetQueueMutex;
-
-}APP1_App1Main_t;
+/* none */
 
 /* public variables-------------------------------------------------------------*/
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
+/* none */
+
 
 /* end */
-#endif /* APP1_App1Main_H */
-
+#endif /* CONFIGURATION_H */

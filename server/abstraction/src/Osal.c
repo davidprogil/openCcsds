@@ -44,7 +44,6 @@ int8_t ABOS_ThreadCreate(ABOS_thread_return_t taskFunctionPointer, int8_t * task
 {
 	int8_t status=ABOS_ERR_NONE;
 
-	//TODO use priority
 	pthread_create(taskHandler,NULL,taskFunctionPointer,parameters);
 
 	return status;
@@ -78,9 +77,6 @@ int8_t ABOS_BinSemaphoreCreate(ABOS_sem_handle_t *sem)
 	int8_t status = sem_init(sem,1,1);
 	return status;
 }
-
-//TODO remove #include <errno.h>
-
 
 int8_t ABOS_SemaphoreWait(ABOS_sem_handle_t *sem, uint32_t timeoutMs)
 {

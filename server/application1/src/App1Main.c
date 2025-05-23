@@ -15,10 +15,8 @@
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
-//TODO put in configuration?
-#define APP1_THREAD_STACK_SIZE (0)
-#define APP1_THREAD_PRIORITY (0)
-#define APP1_APID (1)
+/* none */
+
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -45,6 +43,7 @@ void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *se
 	this->sentPacketsNo=0;
 	this->receivedPacketsNo=0;
 	this->rejectedPacketsNo=0;
+	this->isRunAgain=M_TRUE;
 
 	//packet queue
 	LFQ_Init(&this->packetQueue,this->packetQueueBuffer,APP1_QUEUE_NB);
@@ -98,7 +97,7 @@ void APP1_DataHandler(void *handlingObject, uint8_t *inData,uint32_t inDataNb)
 ABOS_DEFINE_TASK(APP1_ExecuteThread)
 {
 	APP1_App1Main_t *this=(APP1_App1Main_t*)param;
-	while(1)//TODO is run again?
+	while(this->isRunAgain==M_TRUE)
 	{
 		ABOS_SemaphoreWait(this->semaphoreStart,ABOS_TASK_MAX_DELAY);
 		APP1_Execute(this);

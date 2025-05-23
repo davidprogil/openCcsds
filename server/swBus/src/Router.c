@@ -15,9 +15,7 @@
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
-//TODO put in configuration?
-#define SBRO_THREAD_STACK_SIZE (0)
-#define SBRO_THREAD_PRIORITY (0)
+/* none */
 
 /* local types ----------------------------------------------------------------*/
 /* none */

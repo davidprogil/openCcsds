@@ -6,7 +6,6 @@
 /*******************************************************************************/
 
 /* system includes-------------------------------------------------------------*/
-#include <ABOS_Osal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,14 +13,15 @@
 #include <pthread.h>
 
 /* application includes--------------------------------------------------------*/
-#include <CORE_Maestro.h>
+#include <configuration.h>
+#include <ABOS_Osal.h>
+#include <SBCC_CcsdsUtils.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
 #define MAIN_INFINITE_CYCLE_PERIOD_MS (1000)
-
 
 /* local types ----------------------------------------------------------------*/
 /* none */
@@ -30,9 +30,11 @@
 /* none */
 
 /* local variables ------------------------------------------------------------*/
-CMAS_Maestro_t maestro;
 ABOS_Osal_t osal;
 uint16_t sequenceCount=0;
+bool_t isRunAgain=M_TRUE;
+uint32_t upTime=0;
+
 /* local prototypes -----------------------------------------------------------*/
 /* none */
 
@@ -40,25 +42,7 @@ uint16_t sequenceCount=0;
 /* public functions -----------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
-	printf("SERVER\n");
-
-	//road map:
-	// x server folder
-	// x maestro template and init integrated
-	// x OSAL integrated
-	// x maestro running each 1 sec
-	// x application1 template and init integrated
-	// x maestro scheduling application1
-	// x server sends commands to application
-	// x configuration file
-	// x client/server separation
-	// - data link abstraction
-	// - application responds back
-	// - exchange data through sockets
-	// - mechanism to safely stop threads
-	// - address TODOs
-	// - documentation
-
+	printf("CLIENT\n");
 
 	//hardware initialization
 	//not applicable in standard linux pc
@@ -72,26 +56,18 @@ int main(int argc, char *argv[])
 	//abstraction initialization
 	ABOS_Init(&osal);
 
-	//Maestro Initialization and wait
-	CMAS_Init(&maestro);
-	ABOS_Sleep(100);
-
-	//maestro start
-	CMAS_Start(&maestro);
-
 	//other starts
 	//TODO
 
 	//Infinite Cycle
-	while (maestro.isRunAgain==M_TRUE)
+	while (isRunAgain==M_TRUE)
 	{
-		//wait
-		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
-		printf("server %d\n",maestro.upTime);
 
-		//TODO debug create and send packet
-		if ((maestro.upTime==3)||(maestro.upTime==6))
+		printf("client %d\n",upTime);
+
+		if ((upTime>0)&&(upTime%5==0))
 		{
+			printf("time to send packet\n");
 			uint8_t dummyDataToSend[2] = {sequenceCount+3,sequenceCount+4};
 			uint8_t packetBuffer[sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend)];
 			//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
@@ -107,10 +83,11 @@ int main(int argc, char *argv[])
 					dummyDataToSend) ==M_FALSE)
 			{
 
-				printf("SERVER: sending this packet:\n");
 				CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+
 				//send the packet
-				SBRO_Publish(&maestro.swBus,packetBuffer,sizeof(packetBuffer));
+				//TODO
+
 				//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
 				sequenceCount++;
 			}
@@ -119,13 +96,10 @@ int main(int argc, char *argv[])
 				printf("warning: main, error creating packet\n");
 			}
 		}
+		//wait
+		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
+		upTime++;
 
-		//TODO debug exit
-		if (maestro.upTime>=10)
-		{
-			//TODO stop signal instead
-			maestro.isRunAgain=M_FALSE;
-		}
 	}
 	//wait for all tasks to stop hopefully
 	ABOS_Sleep(1000);
