@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	// x server sends commands to application
 	// x configuration file
 	// x client/server separation
-	// - data link abstraction
+	// x data link abstraction
 	// - application responds back
 	// - exchange data through sockets
 	// - mechanism to safely stop threads
@@ -87,45 +87,6 @@ int main(int argc, char *argv[])
 	{
 		//wait
 		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
-		printf("server %d\n",maestro.upTime);
-
-		//TODO debug create and send packet
-		if ((maestro.upTime==3)||(maestro.upTime==6))
-		{
-			uint8_t dummyDataToSend[2] = {sequenceCount+3,sequenceCount+4};
-			uint8_t packetBuffer[sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend)];
-			//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
-
-			if (CCSDS_CreatePacket(
-					packetBuffer, //target
-					sizeof(packetBuffer), //targetNb
-					M_TRUE, //isTc
-					M_FALSE, //hasSecondaryHeader,
-					APP1_APID,//apid,
-					sequenceCount,
-					sizeof(dummyDataToSend),
-					dummyDataToSend) ==M_FALSE)
-			{
-
-				printf("SERVER: sending this packet:\n");
-				CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
-				//send the packet
-				SBRO_Publish(&maestro.swBus,packetBuffer,sizeof(packetBuffer));
-				//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
-				sequenceCount++;
-			}
-			else
-			{
-				printf("warning: main, error creating packet\n");
-			}
-		}
-
-		//TODO debug exit
-		if (maestro.upTime>=10)
-		{
-			//TODO stop signal instead
-			maestro.isRunAgain=M_FALSE;
-		}
 	}
 	//wait for all tasks to stop hopefully
 	ABOS_Sleep(1000);

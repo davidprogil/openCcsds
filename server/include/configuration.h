@@ -34,6 +34,9 @@
 #define SBRO_THREAD_STACK_SIZE (0)
 #define SBRO_THREAD_PRIORITY (0)
 
+#define ABDL_RECEIVE_THREAD_STACK_SIZE (0)
+#define ABDL_RECEIVE_THREAD_PRIORITY (0)
+
 //scheduling of apps
 #define ABOS_MAESTRO_PERIOD_MS (1000)
 #define SWBUS_WAIT_BEFORE_MS (10)
@@ -46,6 +49,8 @@
 #define SBRO_QUEUE_NB (2000) //TODO move to configuration
 #define SBRO_PACKET_MAX_NB (256) //TODO move to configuration
 
+//Datalink
+#define ABDL_RECEIVE_QUEUE_NB (2000) //TODO move to configuration
 
 /* types------------------------------------------------------------------------*/
 /* none */

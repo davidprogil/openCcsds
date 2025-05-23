@@ -62,6 +62,9 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 			(void *)this, /* parameters */
 			SBRO_THREAD_PRIORITY, /* priority */
 			&this->threadHandleExecute); /* handler */
+
+	ABDL_Init(&this->dataLink);
+	ABDL_SetServer(&this->dataLink);
 }
 
 void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
@@ -92,6 +95,17 @@ void SBRO_Execute(SBRO_Router_t *this)
 	uint16_t packetSize;
 	CCSDS_Packet_t *packet;
 	uint16_t subscriberIx;
+
+	//get packets from the datalink and publish them
+	ABOS_MutexLock(&this->dataLink.receiveQueueMutex,ABOS_TASK_MAX_DELAY);
+	while(LFQ_QueueGet(&this->dataLink.receiveQueue,packetBuffer,&packetSize))
+	{
+		SBRO_Publish(this,packetBuffer,packetSize);
+	}
+	ABOS_MutexUnlock(&this->dataLink.receiveQueueMutex);
+
+	//TODO this queue is redundant
+
 	//get packets from the queue and call adequate subscriber
 	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
 	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))

@@ -14,6 +14,7 @@
 #include <myTypes.h>
 #include <configuration.h>
 #include <ABOS_Osal.h>
+#include <ABDL_DataLink.h>
 #include <LIB_Queue.h>
 
 /* component includes----------------------------------------------------------*/
@@ -52,6 +53,9 @@ typedef struct _SBRO_Router_t_
 	//subscribers management
 	SBRO_Subscriber_t subscribers[SBRO_SUBSCRIBERS_MAX_NO];
 	uint32_t subscribersNo;
+
+	//datalink
+	ABDL_DataLink_t dataLink;
 
 }SBRO_Router_t;
 

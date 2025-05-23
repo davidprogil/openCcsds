@@ -15,6 +15,7 @@
 /* application includes--------------------------------------------------------*/
 #include <configuration.h>
 #include <ABOS_Osal.h>
+#include <ABDL_DataLink.h>
 #include <SBCC_CcsdsUtils.h>
 
 /* component includes----------------------------------------------------------*/
@@ -31,6 +32,7 @@
 
 /* local variables ------------------------------------------------------------*/
 ABOS_Osal_t osal;
+ABDL_DataLink_t dataLink;
 uint16_t sequenceCount=0;
 bool_t isRunAgain=M_TRUE;
 uint32_t upTime=0;
@@ -55,6 +57,7 @@ int main(int argc, char *argv[])
 
 	//abstraction initialization
 	ABOS_Init(&osal);
+	ABDL_Init(&dataLink);
 
 	//other starts
 	//TODO
@@ -86,7 +89,7 @@ int main(int argc, char *argv[])
 				CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
 
 				//send the packet
-				//TODO
+				ABDL_Send(&dataLink,packetBuffer,sizeof(packetBuffer));
 
 				//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
 				sequenceCount++;
