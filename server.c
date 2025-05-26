@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	// x client/server separation
 	// x data link abstraction
 	// - application responds back
-	// - exchange data through sockets
+	// - client handles response
 	// - mechanism to safely stop threads
 	// - address TODOs
 	// - documentation

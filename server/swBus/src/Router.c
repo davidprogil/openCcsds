@@ -113,7 +113,7 @@ void SBRO_Execute(SBRO_Router_t *this)
 		packet=(CCSDS_Packet_t*)packetBuffer;
 		printf("received packet for apid: %d\n",packet->primaryHeader.apid);
 		subscriberIx=GetSubscriberForPid(this,packet->primaryHeader.apid);
-		if (subscriberIx!=UINT32_MAX)
+		if (subscriberIx!=UINT16_MAX)
 		{
 			//call subscriber
 			this->subscribers[subscriberIx].dataHandler(
@@ -139,12 +139,12 @@ void SBRO_InitSubscriber(SBRO_Subscriber_t *this)
 
 uint32_t GetSubscriberForPid(SBRO_Router_t *this,uint16_t apid)
 {
-	uint32_t subscriberIx=UINT32_MAX;
-
+	uint32_t subscriberIx=UINT16_MAX;
 	for (uint32_t sIx=0;sIx<SBRO_SUBSCRIBERS_MAX_NO;sIx++)
 	{
 		if (this->subscribers[sIx].apid==apid)
 		{
+			//printf("GetSubscriberForPid %d\n",sIx);
 			subscriberIx=sIx;
 			break;
 		}

@@ -22,7 +22,7 @@
 #define NO_ERROR (0)
 
 #define IS_LITTLE_ENDIAN (1)
-
+#define UINT16_MAX (65535)
 #define UINT32_MAX (4294967295)
 
 /* types------------------------------------------------------------------------*/

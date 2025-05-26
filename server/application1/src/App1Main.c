@@ -48,9 +48,10 @@ void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *se
 	//packet queue
 	LFQ_Init(&this->packetQueue,this->packetQueueBuffer,APP1_QUEUE_NB);
 	ABOS_MutexCreate(&this->packetQueueMutex);
+	this->router=router;
 
 	//subscribe
-	SBRO_Subscribe(router,APP1_APID,this,*APP1_DataHandler);
+	SBRO_Subscribe(this->router,APP1_APID,this,*APP1_DataHandler);
 
 	//start task
 	ABOS_ThreadCreate(
@@ -71,6 +72,8 @@ void APP1_Execute(APP1_App1Main_t *this)
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
 	uint16_t packetSize;
 	CCSDS_Packet_t *packet;
+	uint8_t *packetData;
+	uint8_t temp;
 	//get packets from the queue
 	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
 	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))
@@ -78,6 +81,18 @@ void APP1_Execute(APP1_App1Main_t *this)
 		printf("APP1_DataHandler received packet:\n");
 		packet=(CCSDS_Packet_t*)packetBuffer;
 		CCSDS_PrintPacket(packet);
+		//invert the data and send the response
+		packetData=&packet->data;
+		temp=packetData[1];
+		packetData[1]=packetData[0];
+		packetData[0]=temp;
+		//change pid //TODO double check tm stuff
+		packet->primaryHeader.apid=GROUND_APID;
+		printf("APP1_DataHandler sending response:\n");
+		CCSDS_PrintPacket(packet);
+		//send
+		SBRO_Publish(this->router,packetBuffer,packetSize);
+
 	}
 	ABOS_MutexUnlock(&this->packetQueueMutex);
 }

@@ -35,7 +35,9 @@ typedef struct _APP1_App1Main_t_
 	uint16_t receivedPacketsNo;
 	uint16_t rejectedPacketsNo;
 	bool_t isRunAgain;
-	//queue
+
+	//queue and data exchange
+	SBRO_Router_t *router;
 	LFQ_Queue_t packetQueue;
 	uint8_t packetQueueBuffer[APP1_QUEUE_NB];
 	ABOS_mutex_t packetQueueMutex;
