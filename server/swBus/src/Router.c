@@ -1,5 +1,5 @@
 /*******************************************************************************/
-/* Copyright David Gil 1998-TODO                                               */
+/* Copyright David Gil 1998-2025                                               */
 /* 								                                               */
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
@@ -101,7 +101,7 @@ void SBRO_Execute(SBRO_Router_t *this)
 	CCSDS_Packet_t *packet;
 	uint16_t subscriberIx;
 
-	//get packets from the datalink and publish them //TODO use proper function
+	//get packets from the datalink and publish them
 	while(ABDL_GetOnePacket(&this->dataLink,packetBuffer,&packetSize))
 	{
 		SBRO_Publish(this,packetBuffer,packetSize);

@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright David Gil 1998-TODO                                               */
+/* Copyright David Gil 1998-2025                                               */
 /* 								                                               */
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
@@ -53,14 +53,14 @@ int main(int argc, char *argv[])
 	printf("size of CCSDS_PrimaryHeader_t: %ld\n",sizeof(CCSDS_PrimaryHeader_t));
 
 	//library initializations
-	//TODO
+	//N/A
 
 	//abstraction initialization
 	ABOS_Init(&osal);
 	ABDL_Init(&dataLink,M_FALSE);
 
 	//other starts
-	//TODO
+	//N/A
 
 	//Infinite Cycle
 	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];

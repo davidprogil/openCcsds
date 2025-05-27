@@ -1,5 +1,5 @@
 /*******************************************************************************/
-/* Copyright David Gil 1998-TODO                                               */
+/* Copyright David Gil 1998-2025                                               */
 /* 								                                               */
 /* davidgil@dgadv.com 			                                               */
 /*******************************************************************************/
@@ -92,7 +92,6 @@ void CMAS_Init(CMAS_Maestro_t *this)
 	/* create mutex for syncFileManagerIO */
 	if (ABOS_MUTEX_OK != semaphoreCreation)
 	{
-		//TODO do something else
 		printf("ERROR CMAS_Init semaphore not created.\n");
 		//this->runAgain=M_FALSE;
 	}
@@ -161,7 +160,7 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 	if (ABOS_SEMAPHORE_OK!=waitResult)
 	{
 		//printf("CMAS_Execute 6\n");
-		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[SWBUS_SEM_START_INDEX],&this->semaphores[SWBUS_SEM_END_INDEX]);//TODO remove
+		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[SWBUS_SEM_START_INDEX],&this->semaphores[SWBUS_SEM_END_INDEX]);
 		/*monitored*/
 		this->overrunsCounter[SWBUS_INDEX]++;
 		/*monitored*/
