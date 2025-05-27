@@ -57,22 +57,25 @@ int main(int argc, char *argv[])
 
 	//abstraction initialization
 	ABOS_Init(&osal);
-	ABDL_Init(&dataLink);
+	ABDL_Init(&dataLink,M_FALSE);
 
 	//other starts
 	//TODO
 
 	//Infinite Cycle
+	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
+	uint16_t receivedNb;
 	while (isRunAgain==M_TRUE)
 	{
 
 		printf("client %d\n",upTime);
 
+		//send packets
 		if ((upTime>0)&&(upTime%5==0))
 		{
 			printf("time to send packet\n");
 			uint8_t dummyDataToSend[2] = {sequenceCount+3,sequenceCount+4};
-			uint8_t packetBuffer[sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend)];
+
 			//printf("size of packet to send: %ld\n",sizeof(packetBuffer));
 
 			if (CCSDS_CreatePacket(
@@ -89,7 +92,7 @@ int main(int argc, char *argv[])
 				CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
 
 				//send the packet
-				ABDL_Send(&dataLink,packetBuffer,sizeof(packetBuffer));
+				ABDL_Send(&dataLink,packetBuffer,sizeof(CCSDS_PrimaryHeader_t)+sizeof(dummyDataToSend));
 
 				//increment counter of sent packets, note, in CCSDS standard this counter is to be maintained for each PID
 				sequenceCount++;
@@ -99,6 +102,12 @@ int main(int argc, char *argv[])
 				printf("warning: main, error creating packet\n");
 			}
 		}
+		//receive packets
+		if (ABDL_GetOnePacket(&dataLink,packetBuffer,&receivedNb))
+		{
+			CCSDS_PrintPacket((CCSDS_Packet_t*) packetBuffer);
+		}
+
 		//wait
 		ABOS_Sleep(MAIN_INFINITE_CYCLE_PERIOD_MS);
 		upTime++;

@@ -76,18 +76,20 @@ void APP1_Execute(APP1_App1Main_t *this)
 	uint8_t temp;
 	//get packets from the queue
 	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
-	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))
+	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))//TODO limit number of TCs per cycle
 	{
 		printf("APP1_DataHandler received packet:\n");
 		packet=(CCSDS_Packet_t*)packetBuffer;
 		CCSDS_PrintPacket(packet);
+
 		//invert the data and send the response
 		packetData=&packet->data;
 		temp=packetData[1];
 		packetData[1]=packetData[0];
 		packetData[0]=temp;
-		//change pid //TODO double check tm stuff
-		packet->primaryHeader.apid=GROUND_APID;
+		//change to TM
+		packet->primaryHeader.packetType=CCSDS_PRIMARY_HEADER_IS_TM;
+
 		printf("APP1_DataHandler sending response:\n");
 		CCSDS_PrintPacket(packet);
 		//send

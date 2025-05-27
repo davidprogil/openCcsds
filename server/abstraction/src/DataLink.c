@@ -30,13 +30,27 @@
 /* local prototypes -----------------------------------------------------------*/
 void ABDL_Execute(ABDL_DataLink_t *this);
 void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port);
+void ABDL_SendDirect(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
 ABOS_DEFINE_TASK(ABDL_ReceiveThread);
+ABOS_DEFINE_TASK(ABDL_SendThread);
 
 /* public functions -----------------------------------------------------------*/
-void ABDL_Init(ABDL_DataLink_t *this)
+void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer)
 {
 	printf("ABDL_Init\n");
-	ABDL_InitSocket(&this->socket,"127.0.0.1",4163);//TODO replace by defines in configuration
+	uint16_t receivePort=4163;//TODO replace by defines in configuration
+	uint16_t sendPort=4164;
+	if (isServer==M_FALSE)
+	{
+		receivePort=4164;
+		sendPort=4163;
+	}
+	ABDL_InitSocket(&this->receiveSocket,"127.0.0.1",receivePort);
+	if (bind(this->receiveSocket.sockfd, (struct sockaddr*)&this->receiveSocket.servaddr, sizeof(this->receiveSocket.servaddr))==ERROR)
+	{
+		printf("warning: ABDL_Init could not bind receive socket on port %d\n",receivePort);
+	}
+	ABDL_InitSocket(&this->sendSocket,"127.0.0.1",sendPort);
 
 	this->isRunAgain=M_TRUE;
 
@@ -44,7 +58,7 @@ void ABDL_Init(ABDL_DataLink_t *this)
 	LFQ_Init(&this->receiveQueue,this->receiveQueueBuffer,ABDL_RECEIVE_QUEUE_NB);
 	ABOS_MutexCreate(&this->receiveQueueMutex);
 
-	//start task
+	//start receive task
 	ABOS_ThreadCreate(
 			ABDL_ReceiveThread, /* function */
 			(int8_t *)"ABDL_R_EXEC", /* name */
@@ -52,26 +66,44 @@ void ABDL_Init(ABDL_DataLink_t *this)
 			(void *)this, /* parameters */
 			ABDL_RECEIVE_THREAD_PRIORITY, /* priority */
 			&this->threadReceive); /* handler */
-}
 
-void ABDL_SetServer(ABDL_DataLink_t *this)
-{
-	bind(this->socket.sockfd, (struct sockaddr*)&this->socket.servaddr, sizeof(this->socket.servaddr));
+	//send queue
+	LFQ_Init(&this->sendQueue,this->sendQueueBuffer,ABDL_SEND_QUEUE_NB);
+	ABOS_MutexCreate(&this->sendQueueMutex);
+
+	//start receive task
+	ABOS_ThreadCreate(
+			ABDL_SendThread, /* function */
+			(int8_t *)"ABDLS_EXEC", /* name */
+			ABDL_SEND_THREAD_STACK_SIZE, /* stack depth */
+			(void *)this, /* parameters */
+			ABDL_SEND_THREAD_PRIORITY, /* priority */
+			&this->threadSend); /* handler */
 }
 
 void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 {
-	uint16_t n=sendto(this->socket.sockfd, (const char *)dataOut, dataOutNb,
-			MSG_CONFIRM, (const struct sockaddr *) &this->socket.servaddr,
-			sizeof(this->socket.servaddr));
-	if (n>0)
+	ABOS_MutexLock(&this->sendQueueMutex,ABOS_TASK_MAX_DELAY);
+	if (LFQ_QueueAdd(&this->sendQueue,dataOut,dataOutNb)==M_TRUE)
 	{
-		this->socket.sentNo++;
+		printf("warning: ABDL_Send packet rejected\n");
+		this->sendSocket.receivedRejectedNo++;
 	}
-	else
+	ABOS_MutexUnlock(&this->sendQueueMutex);
+}
+
+
+bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb)
+{
+	bool_t isData=M_FALSE;
+	ABOS_MutexLock(&this->receiveQueueMutex,ABOS_TASK_MAX_DELAY);
+	if (LFQ_QueueGet(&this->receiveQueue,dataIn,dataInNb))
 	{
-		printf("ERROR: ABDL_Send sending data\n");
+		isData=M_TRUE;
 	}
+	ABOS_MutexUnlock(&this->receiveQueueMutex);
+
+	return isData;
 }
 
 
@@ -79,7 +111,26 @@ void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 /* local functions ------------------------------------------------------------*/
 void ABDL_Execute(ABDL_DataLink_t *this)
 {
-	printf("ABDL_Execute\n");
+	printf("ABDL_Execute\n");//TODO remove
+}
+
+ABOS_DEFINE_TASK(ABDL_SendThread)
+{
+	ABDL_DataLink_t *this=(ABDL_DataLink_t*)param;
+	uint8_t packetBuffer[SBRO_PACKET_MAX_NB];
+	uint16_t packetSize;
+	while(this->isRunAgain==M_TRUE)
+	{
+		ABOS_MutexLock(&this->sendQueueMutex,ABOS_TASK_MAX_DELAY);
+		if (LFQ_QueueGet(&this->sendQueue,packetBuffer,&packetSize))
+		{
+			ABDL_SendDirect(this,packetBuffer,packetSize);
+		}
+		ABOS_MutexUnlock(&this->sendQueueMutex);
+
+		ABOS_Sleep(250);//TODO replace by macro
+	}
+	return ABOS_TASK_RETURN;
 }
 
 ABOS_DEFINE_TASK(ABDL_ReceiveThread)
@@ -90,9 +141,9 @@ ABOS_DEFINE_TASK(ABDL_ReceiveThread)
 	uint8_t buffer[SBRO_PACKET_MAX_NB];
 	while(this->isRunAgain==M_TRUE)
 	{
-		len = sizeof(this->socket.cliaddr);
-		n = recvfrom(this->socket.sockfd, buffer, sizeof(buffer),
-				0, (struct sockaddr*)&this->socket.cliaddr,&len); //receive message from server
+		len = sizeof(this->receiveSocket.cliaddr);
+		n = recvfrom(this->receiveSocket.sockfd, buffer, sizeof(buffer),
+				0, (struct sockaddr*)&this->receiveSocket.cliaddr,&len); //receive message from server
 		if (n!=0)
 		{
 			printf("ABDL_ReceiveThread received packet %d bytes\n",n);
@@ -101,11 +152,11 @@ ABOS_DEFINE_TASK(ABDL_ReceiveThread)
 			if (LFQ_QueueAdd(&this->receiveQueue,buffer,n)==M_TRUE)
 			{
 				printf("warning: ABDL_ReceiveThread packet rejected\n");
-				this->socket.receivedRejectedNo++;
+				this->receiveSocket.receivedRejectedNo++;
 			}
 			ABOS_MutexUnlock(&this->receiveQueueMutex);
 		}
-		ABOS_Sleep(10);//TODO replace by macro
+		ABOS_Sleep(250);//TODO replace by macro
 	}
 	return ABOS_TASK_RETURN;
 }
@@ -123,7 +174,7 @@ void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port)
 	memset(&this->cliaddr, 0, sizeof(this->cliaddr));
 	if ( (this->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
 	{
-		printf("error: NURD_InitConnection: socket creation failed");//TODO
+		printf("error: NURD_InitConnection: socket creation failed\n");//TODO
 	}
 	else
 	{
@@ -132,6 +183,21 @@ void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port)
 		this->servaddr.sin_port = htons(this->port);
 
 		this->client_addr_len = sizeof(struct sockaddr_in);
+	}
+}
+
+void ABDL_SendDirect(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
+{
+	uint16_t n=sendto(this->sendSocket.sockfd, (const char *)dataOut, dataOutNb,
+			MSG_CONFIRM, (const struct sockaddr *) &this->sendSocket.servaddr,
+			sizeof(this->sendSocket.servaddr));
+	if (n>0)
+	{
+		this->sendSocket.sentNo++;
+	}
+	else
+	{
+		printf("ERROR: ABDL_Send sending data\n");
 	}
 }
 

@@ -47,14 +47,21 @@ typedef struct _ABDL_Socket_t_
 
 typedef struct _ABDL_DataLink_t_
 {
-	ABDL_Socket_t socket;
+
+
 	//synchronisation
+	bool_t isRunAgain;
+
+	//send
+	ABDL_Socket_t sendSocket;
 	ABOS_thread_handle_t threadSend;
+	LFQ_Queue_t sendQueue;
+	uint8_t sendQueueBuffer[ABDL_SEND_QUEUE_NB];
+	ABOS_mutex_t sendQueueMutex;
 
 	//receive
-	bool_t isRunAgain;
+	ABDL_Socket_t receiveSocket;
 	ABOS_thread_handle_t threadReceive;
-	//receive queue
 	LFQ_Queue_t receiveQueue;
 	uint8_t receiveQueueBuffer[ABDL_RECEIVE_QUEUE_NB];
 	ABOS_mutex_t receiveQueueMutex;
@@ -65,9 +72,10 @@ typedef struct _ABDL_DataLink_t_
 /* none */
 
 /* public functions--------------------------------------------------------------*/
-void ABDL_Init(ABDL_DataLink_t *this);
-void ABDL_SetServer(ABDL_DataLink_t *this);
+void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer);
 void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
+bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb);
+
 
 
 

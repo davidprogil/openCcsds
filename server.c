@@ -53,8 +53,11 @@ int main(int argc, char *argv[])
 	// x configuration file
 	// x client/server separation
 	// x data link abstraction
-	// - application responds back
-	// - client handles response
+	// x - application responds back
+	// x -handle TM PID
+	// x - make SendDirect private
+	// x - client handles response
+	// x - APID 0 is reserved for spacecraft time packets
 	// - mechanism to safely stop threads
 	// - address TODOs
 	// - documentation

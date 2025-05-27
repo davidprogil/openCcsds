@@ -49,10 +49,10 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 	ABOS_MutexCreate(&this->packetQueueMutex);
 
 	//subscriber list
-	this->subscribersNo=0;
-	for (uint32_t sIx=0;sIx<SBRO_SUBSCRIBERS_MAX_NO;sIx++)
+	this->tcSubscribersNo=0;
+	for (uint32_t sIx=0;sIx<SBRO_TC_SUBSCRIBERS_MAX_NO;sIx++)
 	{
-		SBRO_InitSubscriber(&this->subscribers[sIx]);
+		SBRO_InitSubscriber(&this->tcSubscribers[sIx]);
 	}
 
 	ABOS_ThreadCreate(
@@ -63,8 +63,7 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 			SBRO_THREAD_PRIORITY, /* priority */
 			&this->threadHandleExecute); /* handler */
 
-	ABDL_Init(&this->dataLink);
-	ABDL_SetServer(&this->dataLink);
+	ABDL_Init(&this->dataLink,M_TRUE);
 }
 
 void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
@@ -80,10 +79,10 @@ void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
 }
 void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler)
 {
-	this->subscribers[this->subscribersNo].apid=apid;
-	this->subscribers[this->subscribersNo].handlingObject=handlingObject;
-	this->subscribers[this->subscribersNo].dataHandler=dataHandler;
-	this->subscribersNo++;
+	this->tcSubscribers[this->tcSubscribersNo].apid=apid;
+	this->tcSubscribers[this->tcSubscribersNo].handlingObject=handlingObject;
+	this->tcSubscribers[this->tcSubscribersNo].dataHandler=dataHandler;
+	this->tcSubscribersNo++;
 }
 
 
@@ -96,7 +95,12 @@ void SBRO_Execute(SBRO_Router_t *this)
 	CCSDS_Packet_t *packet;
 	uint16_t subscriberIx;
 
-	//get packets from the datalink and publish them
+	//get packets from the datalink and publish them //TODO use proper function
+	/*while(ABDL_GetOnePacket(&this->dataLink,packetBuffer,&packetSize))
+	{
+		SBRO_Publish(this,packetBuffer,packetSize);
+	}*/
+
 	ABOS_MutexLock(&this->dataLink.receiveQueueMutex,ABOS_TASK_MAX_DELAY);
 	while(LFQ_QueueGet(&this->dataLink.receiveQueue,packetBuffer,&packetSize))
 	{
@@ -111,20 +115,27 @@ void SBRO_Execute(SBRO_Router_t *this)
 	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))
 	{
 		packet=(CCSDS_Packet_t*)packetBuffer;
-		printf("received packet for apid: %d\n",packet->primaryHeader.apid);
-		subscriberIx=GetSubscriberForPid(this,packet->primaryHeader.apid);
-		if (subscriberIx!=UINT16_MAX)
+		if (packet->primaryHeader.packetType==CCSDS_PRIMARY_HEADER_IS_TC)
 		{
-			//call subscriber
-			this->subscribers[subscriberIx].dataHandler(
-					this->subscribers[subscriberIx].handlingObject,
-					packetBuffer,
-					packetSize);
+			printf("received packet for apid: %d\n",packet->primaryHeader.apid);
+			subscriberIx=GetSubscriberForPid(this,packet->primaryHeader.apid);
+			if (subscriberIx!=UINT16_MAX)
+			{
+				//call subscriber
+				this->tcSubscribers[subscriberIx].dataHandler(
+						this->tcSubscribers[subscriberIx].handlingObject,
+						packetBuffer,
+						packetSize);
+			}
+			else
+			{
+				printf("warning: SBRO_Execute subscriber not found for apid %d\n",packet->primaryHeader.apid);
+				this->subscriberNotFoundNo++;
+			}
 		}
-		else
+		else//if TM
 		{
-			printf("warning: SBRO_Execute subscriber not found for apid %d\n",packet->primaryHeader.apid);
-			this->subscriberNotFoundNo++;
+			ABDL_Send(&this->dataLink,packetBuffer,packetSize);
 		}
 	}
 	ABOS_MutexUnlock(&this->packetQueueMutex);
@@ -140,9 +151,9 @@ void SBRO_InitSubscriber(SBRO_Subscriber_t *this)
 uint32_t GetSubscriberForPid(SBRO_Router_t *this,uint16_t apid)
 {
 	uint32_t subscriberIx=UINT16_MAX;
-	for (uint32_t sIx=0;sIx<SBRO_SUBSCRIBERS_MAX_NO;sIx++)
+	for (uint32_t sIx=0;sIx<SBRO_TC_SUBSCRIBERS_MAX_NO;sIx++)
 	{
-		if (this->subscribers[sIx].apid==apid)
+		if (this->tcSubscribers[sIx].apid==apid)
 		{
 			//printf("GetSubscriberForPid %d\n",sIx);
 			subscriberIx=sIx;

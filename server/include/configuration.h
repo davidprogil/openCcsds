@@ -17,7 +17,7 @@
 
 /* macros-----------------------------------------------------------------------*/
 //APID
-#define GROUND_APID (0)
+#define GROUND_APID (10)
 #define APP1_APID (1)
 
 #define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
@@ -36,6 +36,8 @@
 
 #define ABDL_RECEIVE_THREAD_STACK_SIZE (0)
 #define ABDL_RECEIVE_THREAD_PRIORITY (0)
+#define ABDL_SEND_THREAD_STACK_SIZE (0)
+#define ABDL_SEND_THREAD_PRIORITY (0)
 
 //scheduling of apps
 #define ABOS_MAESTRO_PERIOD_MS (1000)
@@ -45,12 +47,13 @@
 #define PROCESS1_TIME_LENGTH_MS (100)
 
 //SW BUS Configuration
-#define SBRO_SUBSCRIBERS_MAX_NO (6) //TODO move to configuration
+#define SBRO_TC_SUBSCRIBERS_MAX_NO (6) //TODO move to configuration
 #define SBRO_QUEUE_NB (2000) //TODO move to configuration
 #define SBRO_PACKET_MAX_NB (256) //TODO move to configuration
 
 //Datalink
 #define ABDL_RECEIVE_QUEUE_NB (2000) //TODO move to configuration
+#define ABDL_SEND_QUEUE_NB (2000) //TODO move to configuration
 
 /* types------------------------------------------------------------------------*/
 /* none */

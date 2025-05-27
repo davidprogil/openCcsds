@@ -20,6 +20,8 @@
 #define CCSDS_VERSION_NUMBER (0) //0 CCSDS 133.0-B-1
 #define CCSDS_STANDALONE_PACKET (0b11)
 
+#define CCSDS_PRIMARY_HEADER_IS_TM (0)
+#define CCSDS_PRIMARY_HEADER_IS_TC (1)
 /* types------------------------------------------------------------------------*/
 /*CCSDS-PUS ECSS-E-ST-70-41C15April2016-PUS
 -- packet primary header
@@ -41,7 +43,7 @@ typedef struct __attribute__((packed)) _CCSDS_PrimaryHeader_t_
 	uint8_t versionNumber:3; //0 CCSDS 133.0-B-1
 	uint8_t packetType:1; //0-TM, 1-TC
 	uint8_t secondaryHeader:1; //0-no 1-yes
-	uint16_t apid:11;
+	uint16_t apid:11;//source APID if TM, destination APID if TC
 	//sequence control
 	uint8_t sequenceFlag:2; //11 for stand alone
 	uint16_t sequenceCount:14;

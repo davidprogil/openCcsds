@@ -51,8 +51,8 @@ typedef struct _SBRO_Router_t_
 	ABOS_mutex_t packetQueueMutex;
 
 	//subscribers management
-	SBRO_Subscriber_t subscribers[SBRO_SUBSCRIBERS_MAX_NO];
-	uint32_t subscribersNo;
+	SBRO_Subscriber_t tcSubscribers[SBRO_TC_SUBSCRIBERS_MAX_NO];
+	uint32_t tcSubscribersNo;
 
 	//datalink
 	ABDL_DataLink_t dataLink;
