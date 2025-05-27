@@ -55,6 +55,7 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 		SBRO_InitSubscriber(&this->tcSubscribers[sIx]);
 	}
 
+	this->isRunAgain=M_TRUE;
 	ABOS_ThreadCreate(
 			SBRO_ExecuteThread, /* function */
 			(int8_t *)"SBRO_EXEC", /* name */
@@ -66,6 +67,11 @@ void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_ha
 	ABDL_Init(&this->dataLink,M_TRUE);
 }
 
+void SBRO_Stop(SBRO_Router_t *this)
+{
+	this->isRunAgain=M_FALSE;
+	ABDL_Stop(&this->dataLink);
+}
 void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
 {
 	/* add packet to queue */
@@ -96,19 +102,10 @@ void SBRO_Execute(SBRO_Router_t *this)
 	uint16_t subscriberIx;
 
 	//get packets from the datalink and publish them //TODO use proper function
-	/*while(ABDL_GetOnePacket(&this->dataLink,packetBuffer,&packetSize))
-	{
-		SBRO_Publish(this,packetBuffer,packetSize);
-	}*/
-
-	ABOS_MutexLock(&this->dataLink.receiveQueueMutex,ABOS_TASK_MAX_DELAY);
-	while(LFQ_QueueGet(&this->dataLink.receiveQueue,packetBuffer,&packetSize))
+	while(ABDL_GetOnePacket(&this->dataLink,packetBuffer,&packetSize))
 	{
 		SBRO_Publish(this,packetBuffer,packetSize);
 	}
-	ABOS_MutexUnlock(&this->dataLink.receiveQueueMutex);
-
-	//TODO this queue is redundant
 
 	//get packets from the queue and call adequate subscriber
 	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
@@ -168,7 +165,7 @@ uint32_t GetSubscriberForPid(SBRO_Router_t *this,uint16_t apid)
 ABOS_DEFINE_TASK(SBRO_ExecuteThread)
 {
 	SBRO_Router_t *this=(SBRO_Router_t*)param;
-	while(1)//TODO is run again?
+	while(this->isRunAgain)
 	{
 		ABOS_SemaphoreWait(this->semaphoreStart,ABOS_TASK_MAX_DELAY);
 		SBRO_Execute(this);

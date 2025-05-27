@@ -128,6 +128,12 @@ void CMAS_Start(CMAS_Maestro_t *this)
 {
 	ABOS_SemaphorePost(&this->semaphoreMaestro);
 }
+void CMAS_Stop(CMAS_Maestro_t *this)
+{
+	this->isRunAgain=M_FALSE;
+	SBRO_Stop(&this->swBus);
+	APP1_Stop(&this->proc1);
+}
 
 /* local functions ------------------------------------------------------------*/
 void CMAS_Execute(CMAS_Maestro_t *this)
@@ -161,7 +167,7 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 		/*monitored*/
 		this->consecutiveOverrunsCounter[SWBUS_INDEX]++;
 		/* if over threshold: raise alarm, wait and reboot */
-		if (this->consecutiveOverrunsCounter[SWBUS_INDEX]==5)//TODO put in configuration
+		if (this->consecutiveOverrunsCounter[SWBUS_INDEX]==CMAS_OVERRUNS_MAX_NO)
 		{
 			printf("Reboot\n");
 			/* reboot */
@@ -199,7 +205,7 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 		/*monitored*/
 		this->consecutiveOverrunsCounter[PROCESS1_INDEX]++;
 		/* if over threshold: raise alarm, wait and reboot */
-		if (this->consecutiveOverrunsCounter[PROCESS1_INDEX]==5)//TODO magic number
+		if (this->consecutiveOverrunsCounter[PROCESS1_INDEX]==CMAS_OVERRUNS_MAX_NO)
 		{
 			printf("Reboot\n");
 			/* reboot */

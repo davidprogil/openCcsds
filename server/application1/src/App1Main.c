@@ -63,6 +63,10 @@ void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *se
 			&this->threadHandleExecute); /* handler */
 }
 
+void APP1_Stop(APP1_App1Main_t *this)
+{
+	this->isRunAgain=M_FALSE;
+}
 
 
 /* local functions ------------------------------------------------------------*/
@@ -74,9 +78,10 @@ void APP1_Execute(APP1_App1Main_t *this)
 	CCSDS_Packet_t *packet;
 	uint8_t *packetData;
 	uint8_t temp;
+	uint16_t processedTcNo=0;
 	//get packets from the queue
 	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
-	while(LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))//TODO limit number of TCs per cycle
+	while ((LFQ_QueueGet(&this->packetQueue,packetBuffer,&packetSize))&&(processedTcNo<APP1_TC_MAX_NB))
 	{
 		printf("APP1_DataHandler received packet:\n");
 		packet=(CCSDS_Packet_t*)packetBuffer;
@@ -94,7 +99,7 @@ void APP1_Execute(APP1_App1Main_t *this)
 		CCSDS_PrintPacket(packet);
 		//send
 		SBRO_Publish(this->router,packetBuffer,packetSize);
-
+		processedTcNo++;
 	}
 	ABOS_MutexUnlock(&this->packetQueueMutex);
 }

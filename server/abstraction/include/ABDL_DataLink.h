@@ -73,6 +73,7 @@ typedef struct _ABDL_DataLink_t_
 
 /* public functions--------------------------------------------------------------*/
 void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer);
+void ABDL_Stop(ABDL_DataLink_t *this);
 void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
 bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInNb);
 

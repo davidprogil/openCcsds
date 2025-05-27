@@ -40,7 +40,7 @@ typedef struct _SBRO_Router_t_
 	ABOS_thread_handle_t threadHandleExecute;
 	ABOS_sem_handle_t *semaphoreStart;
 	ABOS_sem_handle_t *semaphoreEnd;
-
+	bool_t isRunAgain;
 	//counters
 	uint32_t rejectedPacketsNo;
 	uint32_t subscriberNotFoundNo;
@@ -64,6 +64,7 @@ typedef struct _SBRO_Router_t_
 
 /* public functions--------------------------------------------------------------*/
 void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
+void SBRO_Stop(SBRO_Router_t *this);
 void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb);
 void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler);
 

@@ -58,9 +58,15 @@ int main(int argc, char *argv[])
 	// x - make SendDirect private
 	// x - client handles response
 	// x - APID 0 is reserved for spacecraft time packets
-	// - mechanism to safely stop threads
-	// - address TODOs
+	// x - address TODOs
+	// x - mechanism to safely stop threads
 	// - documentation
+	// - template
+	// - intro
+	// - architecture static
+	// - architecture dynamic
+	// - integration example PPC
+	// - add application
 
 
 	//hardware initialization
@@ -70,7 +76,7 @@ int main(int argc, char *argv[])
 	printf("size of CCSDS_PrimaryHeader_t: %ld\n",sizeof(CCSDS_PrimaryHeader_t));
 
 	//library initializations
-	//TODO
+	//NA
 
 	//abstraction initialization
 	ABOS_Init(&osal);
@@ -83,7 +89,7 @@ int main(int argc, char *argv[])
 	CMAS_Start(&maestro);
 
 	//other starts
-	//TODO
+	//NA
 
 	//Infinite Cycle
 	while (maestro.isRunAgain==M_TRUE)

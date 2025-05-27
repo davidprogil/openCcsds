@@ -28,7 +28,6 @@
 /* none */
 
 /* local prototypes -----------------------------------------------------------*/
-void ABDL_Execute(ABDL_DataLink_t *this);
 void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port);
 void ABDL_SendDirect(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb);
 ABOS_DEFINE_TASK(ABDL_ReceiveThread);
@@ -38,8 +37,8 @@ ABOS_DEFINE_TASK(ABDL_SendThread);
 void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer)
 {
 	printf("ABDL_Init\n");
-	uint16_t receivePort=4163;//TODO replace by defines in configuration
-	uint16_t sendPort=4164;
+	uint16_t receivePort=ABDL_SERVER_PORT;
+	uint16_t sendPort=ABDL_CLIENT_PORT;
 	if (isServer==M_FALSE)
 	{
 		receivePort=4164;
@@ -81,6 +80,11 @@ void ABDL_Init(ABDL_DataLink_t *this,bool_t isServer)
 			&this->threadSend); /* handler */
 }
 
+void ABDL_Stop(ABDL_DataLink_t *this)
+{
+	this->isRunAgain=M_FALSE;
+}
+
 void ABDL_Send(ABDL_DataLink_t *this,uint8_t *dataOut,uint16_t dataOutNb)
 {
 	ABOS_MutexLock(&this->sendQueueMutex,ABOS_TASK_MAX_DELAY);
@@ -109,11 +113,6 @@ bool_t ABDL_GetOnePacket(ABDL_DataLink_t *this,uint8_t *dataIn,uint16_t *dataInN
 
 
 /* local functions ------------------------------------------------------------*/
-void ABDL_Execute(ABDL_DataLink_t *this)
-{
-	printf("ABDL_Execute\n");//TODO remove
-}
-
 ABOS_DEFINE_TASK(ABDL_SendThread)
 {
 	ABDL_DataLink_t *this=(ABDL_DataLink_t*)param;
@@ -128,7 +127,7 @@ ABOS_DEFINE_TASK(ABDL_SendThread)
 		}
 		ABOS_MutexUnlock(&this->sendQueueMutex);
 
-		ABOS_Sleep(250);//TODO replace by macro
+		ABOS_Sleep(ABDL_SEND_THREAD_MS);
 	}
 	return ABOS_TASK_RETURN;
 }
@@ -156,7 +155,7 @@ ABOS_DEFINE_TASK(ABDL_ReceiveThread)
 			}
 			ABOS_MutexUnlock(&this->receiveQueueMutex);
 		}
-		ABOS_Sleep(250);//TODO replace by macro
+		ABOS_Sleep(ABDL_RECEIVE_THREAD_MS);
 	}
 	return ABOS_TASK_RETURN;
 }
@@ -174,7 +173,7 @@ void ABDL_InitSocket(ABDL_Socket_t *this,const char *addressTxt,uint16_t port)
 	memset(&this->cliaddr, 0, sizeof(this->cliaddr));
 	if ( (this->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
 	{
-		printf("error: NURD_InitConnection: socket creation failed\n");//TODO
+		printf("error: NURD_InitConnection: socket creation failed\n");
 	}
 	else
 	{

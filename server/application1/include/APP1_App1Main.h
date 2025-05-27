@@ -49,6 +49,7 @@ typedef struct _APP1_App1Main_t_
 
 /* public functions--------------------------------------------------------------*/
 void APP1_Init(APP1_App1Main_t *this,SBRO_Router_t *router,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
+void APP1_Stop(APP1_App1Main_t *this);
 
 /* end */
 #endif /* APP1_App1Main_H */

@@ -20,21 +20,16 @@ TARGET=$(shell uname -m)
 #--------------------------------------------------------------------------------
 # project components
 # IO 
-# TODO include ./lib/nullRadio/nullRadio.mk
 include ./server/abstraction/abstraction.mk
 # library
 include ./server/library/library.mk
 # core
 include ./server/core/core.mk
 # mission
-# TODO include ./lib/gndPackets/gndPackets.mk
-# TODO include ./lib/fswPackets/fswPackets.mk
+# none
 # application
 include ./server/swBus/swBus.mk
 include ./server/application1/application1.mk
-# TODO include ./lib/serverEssentials/serverEssentials.mk
-# TODO include ./lib/serverCommandsDefinitions/serverCommandsDefinitions.mk
-
 
 #------------------------------------------------------------------------------#							
 # compile server
@@ -90,7 +85,6 @@ $(SERVER_MAIN_EXE): $(SERVER_MAIN_OBJ) $(SERVER_MAIN_OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(SERVER_MAIN_OBJ) $(SERVER_MAIN_OBJECTS) $(SERVER_MAIN_LIBS)
 
 
-#TODO compile: $(SERVER_LIB) $(SERVER_MAIN_EXE)
 compileServer: $(SERVER_MAIN_EXE)
 
 runServer: compileServer
@@ -152,7 +146,6 @@ $(CLIENT_MAIN_EXE): $(CLIENT_MAIN_OBJ) $(CLIENT_MAIN_OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $(CLIENT_MAIN_OBJ) $(CLIENT_MAIN_OBJECTS) $(CLIENT_MAIN_LIBS)
 
 
-#TODO compile: $(CLIENT_LIB) $(CLIENT_MAIN_EXE)
 compileClient: $(CLIENT_MAIN_EXE)
 
 runClient: compileClient

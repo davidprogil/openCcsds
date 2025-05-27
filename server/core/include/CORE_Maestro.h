@@ -50,6 +50,7 @@ typedef struct _CMAS_Maestro_t_
 /* public functions--------------------------------------------------------------*/
 void CMAS_Init(CMAS_Maestro_t *this);
 void CMAS_Start(CMAS_Maestro_t *this);
+void CMAS_Stop(CMAS_Maestro_t *this);
 
 
 /* end */
