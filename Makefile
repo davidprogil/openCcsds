@@ -159,7 +159,7 @@ clean:
 	rm -rf $(SERVER_COMMANDSDEFINITIONS_COMPONENT_OUTPUT_FOLDER)
 	rm -rf $(SERVER_COMPONENT_OBJ)
 
-all: compile
+all: compileClient compileServer
 
 
 	
