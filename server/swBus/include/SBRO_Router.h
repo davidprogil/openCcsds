@@ -65,8 +65,8 @@ typedef struct _SBRO_Router_t_
 /* public functions--------------------------------------------------------------*/
 void SBRO_Init(SBRO_Router_t *this,ABOS_sem_handle_t *semaphoreStart,ABOS_sem_handle_t *semaphoreEnd);
 void SBRO_Stop(SBRO_Router_t *this);
-void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb);
-void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler);
+bool_t SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb);
+bool_t SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler);
 
 
 /* end */

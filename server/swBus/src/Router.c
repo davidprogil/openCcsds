@@ -72,23 +72,39 @@ void SBRO_Stop(SBRO_Router_t *this)
 	this->isRunAgain=M_FALSE;
 	ABDL_Stop(&this->dataLink);
 }
-void SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
+bool_t SBRO_Publish(SBRO_Router_t *this,uint8_t *inData,uint32_t inDataNb)
 {
+	bool_t isError=M_FALSE;
 	/* add packet to queue */
 	ABOS_MutexLock(&this->packetQueueMutex,ABOS_TASK_MAX_DELAY);
 	if (LFQ_QueueAdd(&this->packetQueue,inData,inDataNb)==M_TRUE)
 	{
 		printf("warning: SBRO_Publish packet rejected\n");
 		this->rejectedPacketsNo++;
+
+		isError=M_TRUE;
 	}
 	ABOS_MutexUnlock(&this->packetQueueMutex);
+
+	return isError;
 }
-void SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler)
+bool_t SBRO_Subscribe(SBRO_Router_t *this,uint32_t apid,void *handlingObject,SBRO_DataHandlerFunction_t *dataHandler)
 {
-	this->tcSubscribers[this->tcSubscribersNo].apid=apid;
-	this->tcSubscribers[this->tcSubscribersNo].handlingObject=handlingObject;
-	this->tcSubscribers[this->tcSubscribersNo].dataHandler=dataHandler;
-	this->tcSubscribersNo++;
+	bool_t isError=M_FALSE;
+
+	if (this->tcSubscribersNo<SBRO_TC_SUBSCRIBERS_MAX_NO)
+	{
+		this->tcSubscribers[this->tcSubscribersNo].apid=apid;
+		this->tcSubscribers[this->tcSubscribersNo].handlingObject=handlingObject;
+		this->tcSubscribers[this->tcSubscribersNo].dataHandler=dataHandler;
+		this->tcSubscribersNo++;
+	}
+	else
+	{
+		isError=M_TRUE;
+	}
+
+	return isError;
 }
 
 
