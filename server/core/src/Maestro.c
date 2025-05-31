@@ -15,27 +15,17 @@
 /* none */
 
 /* local macros ---------------------------------------------------------------*/
-
-////syncronisation definitions
-//#define SWBUS_INDEX (0)
-//#define SWBUS_SEM_START_INDEX (SWBUS_INDEX*2)
-//#define SWBUS_SEM_END_INDEX (SWBUS_SEM_START_INDEX+1)
-//
-//#define APP1_INDEX (1)
-//#define APP1_SEM_START_INDEX (APP1_INDEX*2)
-//#define APP1_SEM_END_INDEX (APP1_SEM_START_INDEX+1)
-//
-
+/* none */
 
 /* local types ----------------------------------------------------------------*/
 /* none */
 
 /* public variables -----------------------------------------------------------*/
-uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_START_MS,APP1_TIME_START_MS};
-uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_LENGTH_MS,APP1_TIME_LENGTH_MS};
+/* none */
 
 /* local variables ------------------------------------------------------------*/
-/* none */
+uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_START_MS,APP1_TIME_START_MS};
+uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_LENGTH_MS,APP1_TIME_LENGTH_MS};
 
 /* local prototypes -----------------------------------------------------------*/
 void CMAS_Execute(CMAS_Maestro_t *this);
