@@ -16,22 +16,23 @@
 
 /* local macros ---------------------------------------------------------------*/
 
-//syncronisation definitions
-#define SWBUS_INDEX (0)
-#define SWBUS_SEM_START_INDEX (SWBUS_INDEX*2)
-#define SWBUS_SEM_END_INDEX (SWBUS_SEM_START_INDEX+1)
-
-#define PROCESS1_INDEX (1)
-#define PROCESS1_SEM_START_INDEX (PROCESS1_INDEX*2)
-#define PROCESS1_SEM_END_INDEX (PROCESS1_SEM_START_INDEX+1)
-
+////syncronisation definitions
+//#define SWBUS_INDEX (0)
+//#define SWBUS_SEM_START_INDEX (SWBUS_INDEX*2)
+//#define SWBUS_SEM_END_INDEX (SWBUS_SEM_START_INDEX+1)
+//
+//#define APP1_INDEX (1)
+//#define APP1_SEM_START_INDEX (APP1_INDEX*2)
+//#define APP1_SEM_END_INDEX (APP1_SEM_START_INDEX+1)
+//
 
 
 /* local types ----------------------------------------------------------------*/
 /* none */
 
 /* public variables -----------------------------------------------------------*/
-/* none */
+uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_START_MS,APP1_TIME_START_MS};
+uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_LENGTH_MS,APP1_TIME_LENGTH_MS};
 
 /* local variables ------------------------------------------------------------*/
 /* none */
@@ -46,7 +47,6 @@ void CMAS_Init(CMAS_Maestro_t *this)
 {
 	printf("CMAS_Init\n");
 	int8_t semaphoreCreation=ABOS_MUTEX_OK;
-
 	//status
 	memset(this,0,sizeof(CMAS_Maestro_t));
 	this->isRunAgain=M_FALSE;
@@ -89,18 +89,22 @@ void CMAS_Init(CMAS_Maestro_t *this)
 		this->consecutiveOverrunsCounter[semaphoreIx]=0;
 	}
 
-	/* create mutex for syncFileManagerIO */
+	/* verify semaphore creation */
 	if (ABOS_MUTEX_OK != semaphoreCreation)
 	{
 		printf("ERROR CMAS_Init semaphore not created.\n");
-		//this->runAgain=M_FALSE;
+		this->isRunAgain=M_FALSE;
 	}
 	else
 	{
-
 		//Initialise sub elements
-		SBRO_Init(&this->swBus,&this->semaphores[SWBUS_SEM_START_INDEX],&this->semaphores[SWBUS_SEM_END_INDEX]);
-		APP1_Init(&this->proc1,&this->swBus,&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);
+		//note, order of initialization must be the same as in configuration file when the scheduling is defined
+		// and when appsTimesStart and appsTimesLength is assigned
+		uint16_t sIx=0;
+		SBRO_Init(&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
+		sIx+=2;
+		APP1_Init(&this->proc1,&this->swBus,&this->semaphores[sIx],&this->semaphores[sIx+1]);
+		sIx+=2;
 
 		this->isRunAgain=M_TRUE;
 		/* create threads */
@@ -142,82 +146,122 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 	int8_t waitResult;
 
 	//run the processes in their slot
-	//swbus
-	/* wait for start of task */
-	ABOS_Sleep(SWBUS_WAIT_BEFORE_MS-timeWaited);
-	timeWaited+=SWBUS_WAIT_BEFORE_MS;
-
-	/* unfreeze it */
-	ABOS_SemaphoreWait(&this->semaphores[SWBUS_SEM_END_INDEX],0);//get last one if any
-	ABOS_SemaphorePost(&this->semaphores[SWBUS_SEM_START_INDEX]);
-
-	/* wait for end of task*/
-	ABOS_Sleep(SWBUS_TIME_LENGTH_MS);
-	timeWaited+=SWBUS_TIME_LENGTH_MS;
-	waitResult=ABOS_SemaphoreWait(&this->semaphores[SWBUS_SEM_END_INDEX],0);
-
-	/* check if it met result */
-	if (ABOS_SEMAPHORE_OK!=waitResult)
+	for (uint16_t appIx=0;appIx<CMAS_MAESTRO_APPS_NO;appIx++)
 	{
-		//printf("CMAS_Execute 6\n");
-		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[SWBUS_SEM_START_INDEX],&this->semaphores[SWBUS_SEM_END_INDEX]);
-		/*monitored*/
-		this->overrunsCounter[SWBUS_INDEX]++;
-		/*monitored*/
-		this->consecutiveOverrunsCounter[SWBUS_INDEX]++;
-		/* if over threshold: raise alarm, wait and reboot */
-		if (this->consecutiveOverrunsCounter[SWBUS_INDEX]==CMAS_OVERRUNS_MAX_NO)
-		{
-			printf("Reboot\n");
-			/* reboot */
-			this->isRunAgain=M_FALSE;
+		/* wait for start of task */
+		ABOS_Sleep(appsTimesStart[appIx]-timeWaited);
+		timeWaited+=appsTimesStart[appIx];
 
+		/* unfreeze it */
+		ABOS_SemaphoreWait(&this->semaphores[appIx*2+1],0);//get last one if any
+		ABOS_SemaphorePost(&this->semaphores[appIx*2]);
+
+		/* wait for end of task*/
+		ABOS_Sleep(appsTimesLength[appIx]);
+		timeWaited+=appsTimesLength[appIx];
+		waitResult=ABOS_SemaphoreWait(&this->semaphores[appIx*2+1],0);
+
+		/* check if it met result */
+		if (ABOS_SEMAPHORE_OK!=waitResult)
+		{
+			//printf("CMAS_Execute 6\n");
+			printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[appIx*2],&this->semaphores[appIx*2+1]);
+			/*monitored*/
+			this->overrunsCounter[appIx]++;
+			/*monitored*/
+			this->consecutiveOverrunsCounter[appIx]++;
+			/* if over threshold: raise alarm, wait and reboot */
+			if (this->consecutiveOverrunsCounter[appIx]==CMAS_OVERRUNS_MAX_NO)
+			{
+				printf("Reboot\n");
+				/* reboot */
+				this->isRunAgain=M_FALSE;
+
+			}
+		}
+		else
+		{
+			//printf("CMAS_Execute 7\n");
+			this->consecutiveOverrunsCounter[appIx]=0;
 		}
 	}
-	else
-	{
-		//printf("CMAS_Execute 7\n");
-		this->consecutiveOverrunsCounter[SWBUS_INDEX]=0;
-	}
-	//end of swbus
 
-	//process1
-	/* wait for start of task */
-	ABOS_Sleep(PROCESS1_WAIT_BEFORE_MS-timeWaited);
-
-	timeWaited+=PROCESS1_WAIT_BEFORE_MS;
-	/* unfreeze it */
-	ABOS_SemaphoreWait(&this->semaphores[PROCESS1_SEM_END_INDEX],0);//get last one if any
-	ABOS_SemaphorePost(&this->semaphores[PROCESS1_SEM_START_INDEX]);
-
-	/* wait for end of task*/
-	ABOS_Sleep(PROCESS1_TIME_LENGTH_MS);
-	timeWaited+=PROCESS1_TIME_LENGTH_MS;
-	waitResult=ABOS_SemaphoreWait(&this->semaphores[PROCESS1_SEM_END_INDEX],0);
-
-	/* check if it met result */
-	if (ABOS_SEMAPHORE_OK!=waitResult)
-	{
-		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[PROCESS1_SEM_START_INDEX],&this->semaphores[PROCESS1_SEM_END_INDEX]);
-		/*monitored*/
-		this->overrunsCounter[PROCESS1_INDEX]++;
-		/*monitored*/
-		this->consecutiveOverrunsCounter[PROCESS1_INDEX]++;
-		/* if over threshold: raise alarm, wait and reboot */
-		if (this->consecutiveOverrunsCounter[PROCESS1_INDEX]==CMAS_OVERRUNS_MAX_NO)
-		{
-			printf("Reboot\n");
-			/* reboot */
-			this->isRunAgain=M_FALSE;
-
-		}
-	}
-	else
-	{
-		//printf("CMAS_Execute 14\n");
-		this->consecutiveOverrunsCounter[PROCESS1_INDEX]=0;
-	}
-	//end of process1
+	//TODO replace by for cycle for each application
+//	//swbus
+//	/* wait for start of task */
+//	ABOS_Sleep(SWBUS_TIME_START_MS-timeWaited);
+//	timeWaited+=SWBUS_TIME_START_MS;
+//
+//	/* unfreeze it */
+//	ABOS_SemaphoreWait(&this->semaphores[SWBUS_SEM_END_INDEX],0);//get last one if any
+//	ABOS_SemaphorePost(&this->semaphores[SWBUS_SEM_START_INDEX]);
+//
+//	/* wait for end of task*/
+//	ABOS_Sleep(SWBUS_TIME_LENGTH_MS);
+//	timeWaited+=SWBUS_TIME_LENGTH_MS;
+//	waitResult=ABOS_SemaphoreWait(&this->semaphores[SWBUS_SEM_END_INDEX],0);
+//
+//	/* check if it met result */
+//	if (ABOS_SEMAPHORE_OK!=waitResult)
+//	{
+//		//printf("CMAS_Execute 6\n");
+//		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[SWBUS_SEM_START_INDEX],&this->semaphores[SWBUS_SEM_END_INDEX]);
+//		/*monitored*/
+//		this->overrunsCounter[SWBUS_INDEX]++;
+//		/*monitored*/
+//		this->consecutiveOverrunsCounter[SWBUS_INDEX]++;
+//		/* if over threshold: raise alarm, wait and reboot */
+//		if (this->consecutiveOverrunsCounter[SWBUS_INDEX]==CMAS_OVERRUNS_MAX_NO)
+//		{
+//			printf("Reboot\n");
+//			/* reboot */
+//			this->isRunAgain=M_FALSE;
+//
+//		}
+//	}
+//	else
+//	{
+//		//printf("CMAS_Execute 7\n");
+//		this->consecutiveOverrunsCounter[SWBUS_INDEX]=0;
+//	}
+//	//end of swbus
+//
+//	//process1
+//	/* wait for start of task */
+//	ABOS_Sleep(APP1_TIME_START_MS-timeWaited);
+//	timeWaited+=APP1_TIME_START_MS;
+//	/* unfreeze it */
+//	ABOS_SemaphoreWait(&this->semaphores[APP1_SEM_END_INDEX],0);//get last one if any
+//	ABOS_SemaphorePost(&this->semaphores[APP1_SEM_START_INDEX]);
+//
+//	/* wait for end of task*/
+//	ABOS_Sleep(APP1_TIME_LENGTH_MS);
+//	timeWaited+=APP1_TIME_LENGTH_MS;
+//	waitResult=ABOS_SemaphoreWait(&this->semaphores[APP1_SEM_END_INDEX],0);
+//
+//	/* check if it met result */
+//	if (ABOS_SEMAPHORE_OK!=waitResult)
+//	{
+//		printf("* * * Commander Task Problem * * * %p %p\r\n",&this->semaphores[APP1_SEM_START_INDEX],&this->semaphores[APP1_SEM_END_INDEX]);
+//		/*monitored*/
+//		this->overrunsCounter[APP1_INDEX]++;
+//		/*monitored*/
+//		this->consecutiveOverrunsCounter[APP1_INDEX]++;
+//		/* if over threshold: raise alarm, wait and reboot */
+//		if (this->consecutiveOverrunsCounter[APP1_INDEX]==CMAS_OVERRUNS_MAX_NO)
+//		{
+//			printf("Reboot\n");
+//			/* reboot */
+//			this->isRunAgain=M_FALSE;
+//
+//		}
+//	}
+//	else
+//	{
+//		//printf("CMAS_Execute 14\n");
+//		this->consecutiveOverrunsCounter[APP1_INDEX]=0;
+//	}
+//	//end of process1
 
 }
 

@@ -20,8 +20,7 @@
 /* none */
 
 /* macros-----------------------------------------------------------------------*/
-#define CMAS_PROCESSES_NO (2)
-#define CMAS_PROCESSES_SEMAPHORES_NO (2*CMAS_PROCESSES_NO)
+#define CMAS_PROCESSES_SEMAPHORES_NO (2*CMAS_MAESTRO_APPS_NO)
 
 /* types------------------------------------------------------------------------*/
 typedef struct _CMAS_Maestro_t_
