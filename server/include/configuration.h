@@ -20,10 +20,6 @@
 #define GROUND_APID (10)
 #define APP1_APID (1)
 
-//Application 1
-#define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
-#define APP1_TC_MAX_NB (4)
-
 //Maestro
 #define CMAS_OVERRUNS_MAX_NO (5)
 
@@ -50,7 +46,7 @@
 #define SWBUS_TIME_START_MS (10)
 #define SWBUS_TIME_LENGTH_MS (90)
 #define APP1_TIME_START_MS (110)
-#define APP1_TIME_LENGTH_MS (100)
+#define APP1_TIME_LENGTH_MS (90)
 
 //SW BUS Configuration
 #define SBRO_TC_SUBSCRIBERS_MAX_NO (6)
@@ -64,6 +60,11 @@
 #define ABDL_CLIENT_PORT (4164)
 #define ABDL_RECEIVE_THREAD_MS (250)
 #define ABDL_SEND_THREAD_MS (250)
+
+//Application 1
+#define APP1_QUEUE_NB (SBRO_PACKET_MAX_NB*4)
+#define APP1_TC_MAX_NB (4)
+
 /* types------------------------------------------------------------------------*/
 /* none */
 

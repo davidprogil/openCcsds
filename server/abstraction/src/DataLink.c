@@ -145,7 +145,7 @@ ABOS_DEFINE_TASK(ABDL_ReceiveThread)
 				0, (struct sockaddr*)&this->receiveSocket.cliaddr,&len); //receive message from server
 		if (n!=0)
 		{
-			printf("ABDL_ReceiveThread received packet %d bytes\n",n);
+			printf("ABDL_ReceiveThread received packet %d bytes, queued: %d\n",n,this->receiveQueue.noElements);
 			/* add packet to queue */
 			ABOS_MutexLock(&this->receiveQueueMutex,ABOS_TASK_MAX_DELAY);
 			if (LFQ_QueueAdd(&this->receiveQueue,buffer,n)==M_TRUE)

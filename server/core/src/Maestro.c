@@ -24,8 +24,12 @@
 /* none */
 
 /* local variables ------------------------------------------------------------*/
-uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_START_MS,APP1_TIME_START_MS};
-uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={SWBUS_TIME_LENGTH_MS,APP1_TIME_LENGTH_MS};
+uint32_t appsTimesStart[CMAS_MAESTRO_APPS_NO]={
+		SWBUS_TIME_START_MS,
+		APP1_TIME_START_MS};
+uint32_t appsTimesLength[CMAS_MAESTRO_APPS_NO]={
+		SWBUS_TIME_LENGTH_MS,
+		APP1_TIME_LENGTH_MS};
 
 /* local prototypes -----------------------------------------------------------*/
 void CMAS_Execute(CMAS_Maestro_t *this);
@@ -133,15 +137,16 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 {
 	//printf("CMAS_Execute\n");
 	uint16_t timeWaited=0;
+	uint16_t timeToWait;
 	int8_t waitResult;
 
 	//run the processes in their slot
 	for (uint16_t appIx=0;appIx<CMAS_MAESTRO_APPS_NO;appIx++)
 	{
 		/* wait for start of task */
-		ABOS_Sleep(appsTimesStart[appIx]-timeWaited);
-		timeWaited+=appsTimesStart[appIx];
-
+		timeToWait=appsTimesStart[appIx]-timeWaited;
+		ABOS_Sleep(timeToWait);
+		timeWaited+=timeToWait;
 		/* unfreeze it */
 		ABOS_SemaphoreWait(&this->semaphores[appIx*2+1],0);//get last one if any
 		ABOS_SemaphorePost(&this->semaphores[appIx*2]);
@@ -150,7 +155,6 @@ void CMAS_Execute(CMAS_Maestro_t *this)
 		ABOS_Sleep(appsTimesLength[appIx]);
 		timeWaited+=appsTimesLength[appIx];
 		waitResult=ABOS_SemaphoreWait(&this->semaphores[appIx*2+1],0);
-
 		/* check if it met result */
 		if (ABOS_SEMAPHORE_OK!=waitResult)
 		{
