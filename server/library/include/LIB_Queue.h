@@ -12,6 +12,7 @@
 
 /* application includes--------------------------------------------------------*/
 #include <myTypes.h>
+#include <ABOS_Osal.h>
 
 /* component includes----------------------------------------------------------*/
 /* none */
@@ -46,6 +47,7 @@ void LFQ_Init(LFQ_Queue_t *this,void *bufferPtr,uint32_t maxBufferSize);
 uint16_t LFQ_GetNoQueuedElements(LFQ_Queue_t *this);
 bool_t LFQ_QueueAdd(LFQ_Queue_t *this,void *element,uint32_t elementSize);
 bool_t  LFQ_QueueGet(LFQ_Queue_t *this,void *target,uint16_t *dataSize);
+bool_t  LFQ_QueueGetWithMutex(LFQ_Queue_t *this,ABOS_mutex_t *mutex,void *target,uint16_t *dataSize);
 
 /* end */
 #endif /* LFQ_Queue_H */

@@ -92,11 +92,8 @@ void APP1_Execute(APP1_App1Main_t *this)
 	uint8_t temp;
 	uint16_t processedTcNo = 0;
 
-	// Lock the queue for safe access
-	ABOS_MutexLock(&this->packetQueueMutex, ABOS_TASK_MAX_DELAY);
-
 	// Process packets in the queue (up to a max number)
-	while ((LFQ_QueueGet(&this->packetQueue, packetBuffer, &packetSize)) &&
+	while ( (LFQ_QueueGetWithMutex(&this->packetQueue, &this->packetQueueMutex, packetBuffer, &packetSize)) &&
 			(processedTcNo < APP1_TC_MAX_NB))
 	{
 		printf("APP1_DataHandler received packet:\n");
@@ -124,9 +121,6 @@ void APP1_Execute(APP1_App1Main_t *this)
 
 		processedTcNo++;
 	}
-
-	// Unlock queue after processing
-	ABOS_MutexUnlock(&this->packetQueueMutex);
 }
 
 // Called when a packet for APP1 is received by the router

@@ -16,12 +16,12 @@ QUEUE_OBJ_SRC_PATH=$(QUEUE_OBJ_PATH)/src
 # used includes
 QUEUE_INCLUDES_PATHS=$(sort	-I$(QUEUE_OBJ_INCLUDE_PATH) \
 									$(COMMON_INCLUDES_PATHS) \
-									$(SOMETHING_INCLUDES_PATHS))
+									$(OSAL_INCLUDES_PATHS))
 
 QUEUE_INCLUDES=$(sort	$(QUEUE_OBJ_INCLUDE_PATH)/LIB_$(QUEUE_OBJ_NAME).h \
 									$(QUEUE_OBJ_PATH)/$(QUEUE_OBJ_NAME).mk \
 									$(COMMON_INCLUDES) \
-									$(SOMETHING_INCLUDES))
+									$(OSAL_INCLUDES))
 
 
 #------------------------------------------------------------------------------#

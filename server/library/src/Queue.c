@@ -105,6 +105,17 @@ bool_t  LFQ_QueueGet(LFQ_Queue_t *this,void *target,uint16_t *dataSize)
 	return isPacket;
 }
 
+bool_t  LFQ_QueueGetWithMutex(LFQ_Queue_t *this,ABOS_mutex_t *mutex,void *target,uint16_t *dataSize)
+{
+	bool_t isTherePacket;
+
+	ABOS_MutexLock(mutex, ABOS_TASK_MAX_DELAY);
+	isTherePacket=LFQ_QueueGet(this, target, dataSize);
+	ABOS_MutexUnlock(mutex);
+
+	return isTherePacket;
+}
+
 /* local functions ------------------------------------------------------------*/
 void* LFQ_Write(LFQ_Queue_t *this,uint8_t *source,uint32_t size)
 {
