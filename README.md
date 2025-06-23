@@ -23,4 +23,4 @@ Inside the docs directory, the file "integration-guide.odt" introduces the archi
 Apache 2.0 - permissive license, user has full rights to the code, even for commercial purposes as long as he mentions the author of this code and no rights are denied to the original author (obviously).
 
 # Status
-work in progress, code base done, documentation is work in progress
+First release done, only minor improvements are in progress.
